@@ -35,7 +35,7 @@ export default {
       autoGroupColumnDef: {
         cellRendererParams: {
           innerRenderer: function (params) {
-            return params.data.name;
+            return params.data.charClass;
           },
         },
       },
@@ -84,10 +84,10 @@ function createServerSideDatasource() {
       }
 
       function transformRow(row) {
-        const { name, _id, subclasses } = row;
+        const { charClass, _id, subclasses } = row;
 
         return {
-          name,
+          charClass,
           id: _id,
           group: subclasses.length > 0,
         };

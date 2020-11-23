@@ -5,7 +5,7 @@ const DndCharSchema = new Schema();
 
 // recursive references must be added like this
 DndCharSchema.add({
-    name: String,
+    charClass: String,
     subclasses: [DndCharSchema]
 });
 

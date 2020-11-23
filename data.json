@@ -1,62 +1,62 @@
 [
     {
-        "name": "Wizard",
+        "charClass": "Wizard",
         "subclasses": [
             {
-                "name": "Mage"
+                "charClass": "Mage"
             },
             {
-                "name": "Specialist wizard"
+                "charClass": "Specialist wizard"
             }
         ]
     },
     {
-        "name": "Priest",
+        "charClass": "Priest",
         "subclasses": [
             {
-                "name": "Cleric"
+                "charClass": "Cleric"
             },
             {
-                "name": "Druid"
+                "charClass": "Druid"
             },
             {
-                "name": "Priest of specific mythos"
+                "charClass": "Priest of specific mythos"
             }
         ]
     },
     {
-        "name": "Warrior",
+        "charClass": "Warrior",
         "subclasses": [
             {
-                "name": "Fighter"
+                "charClass": "Fighter"
             },
             {
-                "name": "Paladin"
+                "charClass": "Paladin"
             },
             {
-                "name": "Ranger"
+                "charClass": "Ranger"
             }
         ]
     },
     {
-        "name": "Rogue",
+        "charClass": "Rogue",
         "subclasses": [
             {
-                "name": "Thief"
+                "charClass": "Thief"
             },
             {
-                "name": "Bard"
+                "charClass": "Bard"
             }
         ]
     },
     {
-        "name": "Rogue",
+        "charClass": "Rogue",
         "subclasses": [
             {
-                "name": "Thief",
+                "charClass": "Thief",
                 "subclasses": [
                     {
-                        "name": "Assassin"
+                        "charClass": "Assassin"
                     }
                 ]
             }
