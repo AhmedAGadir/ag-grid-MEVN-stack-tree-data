@@ -1,0 +1,20 @@
+{
+  "name": "ag-grid-mevn-tree-data-blog",
+  "version": "1.0.0",
+  "description": "ag-grid example using tree data and the MEVN stack ",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "mongo-server": "brew services start mongodb-community@4.4",
+    "server": "nodemon server.js",
+    "dev": "concurrently \"npm run mongo-server\" \"npm run server\""
+  },
+  "author": "Ahmed Gadir",
+  "license": "MIT",
+  "dependencies": {
+    "concurrently": "^5.3.0",
+    "express": "^4.17.1",
+    "mongoose": "^5.10.15",
+    "nodemon": "^2.0.6"
+  }
+}
