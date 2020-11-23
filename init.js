@@ -1,46 +1,3 @@
-var dndCharacterClasses = [
-    {
-        "name": "Wizard",
-        "subclasses": [
-            { "name": "Mage" },
-            { "name": "Specialist wizard" }
-        ]
-    },
-    {
-        "name": "Priest",
-        "subclasses": [
-            { "name": "Cleric" },
-            { "name": "Druid" },
-            { "name": "Priest of specific mythos" }
-        ]
-    },
-    {
-        "name": "Warrior",
-        "subclasses": [
-            { "name": "Fighter" },
-            { "name": "Paladin" },
-            { "name": "Ranger" }
-        ]
-    },
-    {
-        "name": "Rogue",
-        "subclasses": [
-            { "name": "Thief" },
-            { "name": "Bard" }
-        ]
-    },
-    {
-        "name": "Rogue",
-        "subclasses": [
-            {
-                "name": "Thief",
-                "subclasses": [
-                    { "name": "Assassin" }
-                ]
-            }
-        ]
-    }
-]
 
 const DndChar = require('./models/dndchar');
 
@@ -53,7 +10,9 @@ function initDndCharCollection() {
         let promiseArr = [];
 
         // then populate database
-        dndCharacterClasses.forEach(characterClass => {
+        const data = require('./data.json');
+
+        data.forEach(characterClass => {
 
             let char = new DndChar(characterClass);
 

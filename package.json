@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "mongo-server": "brew services start mongodb-community@4.4",
     "server": "nodemon server.js",
-    "dev": "concurrently \"npm run mongo-server\" \"npm run server\""
+    "client": "npm run serve --prefix client",
+    "dev": "concurrently \"npm run mongo-server\" \"npm run server\" \"npm run client\""
   },
   "author": "Ahmed Gadir",
   "license": "MIT",
