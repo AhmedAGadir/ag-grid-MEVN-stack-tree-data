@@ -7,6 +7,7 @@ function initDndCharCollection() {
 
         // then populate database
         const data = require('./data.json');
+
         data.forEach(characterClass => {
             let char = new DndChar(characterClass);
             char.save()
