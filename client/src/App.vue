@@ -71,6 +71,7 @@ function createServerSideDatasource() {
         .catch((err) => console.log(err));
     }
     extractRowsFromResponse(data) {
+      console.log("data before", data);
       let rowData = [];
 
       function doSomething(arr) {
@@ -88,7 +89,7 @@ function createServerSideDatasource() {
         return {
           name,
           id: _id,
-          group: Boolean(subclasses),
+          group: subclasses.length > 0,
         };
       }
 

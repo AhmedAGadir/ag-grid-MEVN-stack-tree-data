@@ -7,7 +7,10 @@ https://stackoverflow.com/questions/37571997/nodejs-run-command-when-script-is-t
 
 https://docs.mongodb.com/manual/tutorial/write-scripts-for-the-mongo-shell/
 
- 
+
+I used postman to experiment with the routes:
+
+https://www.postman.com/ 
 
 
 
@@ -24,6 +27,11 @@ https://docs.mongodb.com/manual/administration/install-community/
 You can use MongoDB Compass to see whats happening in your database:
 
 https://www.mongodb.com/products/compass
+
+
+run:
+
+`$ npm install && npm run client-install`
 
 
 run:

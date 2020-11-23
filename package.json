@@ -5,6 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "client-install": "npm install --prefix client",
     "mongo-server": "brew services start mongodb-community@4.4",
     "server": "nodemon server.js",
     "client": "npm run serve --prefix client",
