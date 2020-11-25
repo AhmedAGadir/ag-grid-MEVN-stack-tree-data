@@ -86,7 +86,7 @@ function createServerSideDatasource() {
           paramsSerializer: (params) => qs.stringify(params),
         })
         .then((res) => {
-          console.log("response", res);
+          console.log("response data", res.data);
 
           // let rows = transformRows(res.data);
           successCallback(res.data, res.data.length);

@@ -8,7 +8,7 @@ app.use(express.json());
 const dotenv = require('dotenv');
 dotenv.config();
 
-const db = process.env.MONGODB_URI;
+const db = process.env.MONGODB_URL;
 
 const mongoose = require('mongoose');
 mongoose

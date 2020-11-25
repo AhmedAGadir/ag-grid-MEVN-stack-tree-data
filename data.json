@@ -53,10 +53,34 @@
         "charClass": "Rogue2",
         "subclasses": [
             {
-                "charClass": "Thief",
+                "charClass": "Thief1",
                 "subclasses": [
                     {
-                        "charClass": "Assassin"
+                        "charClass": "Assassin",
+                        "subclasses": [
+                            {
+                                "charClass": "test1"
+                            },
+                            {
+                                "charClass": "test2"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "charClass": "Thief2",
+                "subclasses": [
+                    {
+                        "charClass": "Assassin",
+                        "subclasses": [
+                            {
+                                "charClass": "test1"
+                            },
+                            {
+                                "charClass": "test2"
+                            }
+                        ]
                     }
                 ]
             }
