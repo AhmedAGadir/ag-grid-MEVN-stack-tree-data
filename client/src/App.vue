@@ -12,6 +12,7 @@
 import { AgGridVue } from "ag-grid-vue";
 import "ag-grid-enterprise";
 import axios from "axios";
+import qs from "qs";
 
 export default {
   name: "App",
@@ -60,44 +61,77 @@ export default {
 function createServerSideDatasource() {
   class ServerSideDataSource {
     getRows(params) {
+      console.log("params", params);
+      const { request, successCallback, failCallback } = params;
+      const { startRow, endRow, groupKeys } = request;
+
+      console.log("request", request);
+
+      // function transformRows(rows) {
+      //   return rows.map((row) => ({
+      //     charClass: row.charClass,
+      //     id: row._id,
+      //     group: true,
+      //   }));
+      // }
+
       axios
-        .get("/api/dndchars")
-        .then((res) => {
-          let rows = this.extractRowsFromResponse(res.data);
-          setTimeout(() => {
-            params.successCallback(rows, rows.length);
-          }, 500);
+        .get("/api/dndchars", {
+          params: {
+            startRow,
+            endRow,
+            groupKeys,
+          },
+          // qs allows us to pass an array in the config params
+          paramsSerializer: (params) => qs.stringify(params),
         })
-        .catch((err) => console.log(err));
-    }
-    extractRowsFromResponse(data) {
-      console.log("data before", data);
-      let rowData = [];
+        .then((res) => {
+          console.log("response", res);
 
-      function doSomething(arr) {
-        arr.forEach((row) => {
-          rowData.push(transformRow(row));
-          if (row.hasOwnProperty("subclasses")) {
-            doSomething(row.subclasses);
-          }
+          // let rows = transformRows(res.data);
+          successCallback(res.data, res.data.length);
+        })
+        .catch((err) => {
+          failCallback(() => console.log("failed"));
         });
-      }
+      //   axios
+      //     .get("/api/dndchars")
+      //     .then((res) => {
+      //       let rows = this.extractRowsFromResponse(res.data);
+      //       setTimeout(() => {
+      //         params.successCallback(rows, rows.length);
+      //       }, 500);
+      //     })
+      //     .catch((err) => console.log(err));
+      // }
+      // extractRowsFromResponse(data) {
+      //   console.log("data before", data);
+      //   let rowData = [];
 
-      function transformRow(row) {
-        const { charClass, _id, subclasses } = row;
+      //   function doSomething(arr) {
+      //     arr.forEach((row) => {
+      //       rowData.push(transformRow(row));
+      //       if (row.hasOwnProperty("subclasses")) {
+      //         doSomething(row.subclasses);
+      //       }
+      //     });
+      //   }
 
-        return {
-          charClass,
-          id: _id,
-          group: subclasses.length > 0,
-        };
-      }
+      //   function transformRow(row) {
+      //     const { charClass, _id, subclasses } = row;
 
-      doSomething(data);
+      //     return {
+      //       charClass,
+      //       id: _id,
+      //       group: subclasses.length > 0,
+      //     };
+      //   }
 
-      console.log(rowData);
+      //   doSomething(data);
 
-      return rowData;
+      //   console.log(rowData);
+
+      // return rowData;
     }
   }
   return new ServerSideDataSource();

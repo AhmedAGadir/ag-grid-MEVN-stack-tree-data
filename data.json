@@ -39,7 +39,7 @@
         ]
     },
     {
-        "charClass": "Rogue",
+        "charClass": "Rogue1",
         "subclasses": [
             {
                 "charClass": "Thief"
@@ -50,7 +50,7 @@
         ]
     },
     {
-        "charClass": "Rogue",
+        "charClass": "Rogue2",
         "subclasses": [
             {
                 "charClass": "Thief",
@@ -61,5 +61,8 @@
                 ]
             }
         ]
+    },
+    {
+        "charClass": "Unknown"
     }
 ]
