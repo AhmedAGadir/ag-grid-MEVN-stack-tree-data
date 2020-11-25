@@ -7,32 +7,29 @@ https://www.mongodb.com/products/compass
 
 You can use Postman to experiment with the API endpoints:
 
+( e.g. http://localhost:5000/api/dndchars )
+
 https://www.postman.com/ 
 
 ======
 
 
-you'll need to first install the mongodb community edition locally:
+If you don't already have it installed, install the mongodb community edition locally (v4.4):
 
 https://docs.mongodb.com/manual/administration/install-community/
 
 
 =====
 
-
 run:
 
-`$ npm install && npm run client-install`
+`$ npm install`
 
-
-run
+`$ npm run client-install`
 
 `$ npm run mongo-service-start`
 
-then:
-
 `$ npm run dev`
-
 
 when you've finished run:
 
