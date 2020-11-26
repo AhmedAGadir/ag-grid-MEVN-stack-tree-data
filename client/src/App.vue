@@ -63,10 +63,17 @@ function createServerSideDatasource() {
   class ServerSideDataSource {
     getRows(params) {
       const { request, successCallback, failCallback } = params;
-      const { startRow, endRow, groupKeys, sortModel } = request;
+      let { startRow, endRow, groupKeys, sortModel } = request;
 
       console.log("request", request);
-      console.log("sortModel", sortModel);
+
+      if (sortModel) {
+        sortModel.forEach((column) => {
+          if (column.colId === "ag-Grid-AutoColumn") {
+            column.colId = "charClass";
+          }
+        });
+      }
 
       axios
         .get("/api/dndchars", {

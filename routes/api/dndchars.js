@@ -29,7 +29,7 @@ router.get('/', (req, res) => {
     // note mongoose queries are NOT promises: https://mongoosejs.com/docs/queries.html#queries-are-not-promises
     let query;
 
-    // ** add grouping to query  ** //
+    // ** grouping  ** //
 
     let transformDocumentsProjection = {
         'charClass': 1,
@@ -75,26 +75,22 @@ router.get('/', (req, res) => {
     } else {
         // return all root level documents 
         query = DndChar.find({}, transformDocumentsProjection);
-
     }
 
 
     // ** sorting ** 
-
 
     let sorting = sortModel.length > 0
 
     if (sorting) {
         let sortQuery = {};
         sortModel.forEach(column => {
-            if (column.colId === 'ag-Grid-AutoColumn') {
-                column.colId = 'charClass'
-            }
-            sortQuery[column.colId] = column.sort
+            sortQuery[column.colId] = column.sort;
         });
-        console.log('sortQuery', sortQuery)
-        query = query.sort(sortQuery)
+        query.sort(sortQuery)
     }
+
+
 
     // ** execute query ** 
 
@@ -105,9 +101,6 @@ router.get('/', (req, res) => {
         }
         res.json(result);
     })
-
-
-
 
 });
 
