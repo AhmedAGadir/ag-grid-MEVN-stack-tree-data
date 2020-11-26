@@ -13,7 +13,7 @@ router.get('/', (req, res) => {
         startRow,
         endRow,
         groupKeys = [],
-        sortModel
+        sortModel = []
     } = req.query;
 
     startRow = parseInt(startRow);
@@ -27,7 +27,6 @@ router.get('/', (req, res) => {
 
 
     // note mongoose queries are NOT promises: https://mongoosejs.com/docs/queries.html#queries-are-not-promises
-
     let query;
 
     // ** add grouping to query  ** //
@@ -80,10 +79,35 @@ router.get('/', (req, res) => {
     }
 
 
+    // ** sorting ** 
+
+
+    let sorting = sortModel.length > 0
+
+    if (sorting) {
+        let sortQuery = {};
+        sortModel.forEach(column => {
+            if (column.colId === 'ag-Grid-AutoColumn') {
+                column.colId = 'charClass'
+            }
+            sortQuery[column.colId] = column.sort
+        });
+        console.log('sortQuery', sortQuery)
+        query = query.sort(sortQuery)
+    }
+
     // ** execute query ** 
 
-    query
-        .then(result => res.json(result));
+    query.exec((err, result) => {
+        if (err) {
+            console.log('error', error);
+            // handler error*****
+        }
+        res.json(result);
+    })
+
+
+
 
 });
 
