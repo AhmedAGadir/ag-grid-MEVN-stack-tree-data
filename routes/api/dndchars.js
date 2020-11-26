@@ -26,6 +26,7 @@ router.get('/', (req, res) => {
 
 
 
+    // note mongoose queries are NOT promises: https://mongoosejs.com/docs/queries.html#queries-are-not-promises
 
     let query;
 
@@ -33,7 +34,7 @@ router.get('/', (req, res) => {
 
     let transformDocumentsProjection = {
         'charClass': 1,
-        'group': {
+        'isGroup': {
             '$cond': {
                 'if': {
                     '$gt': [{ '$size': '$subclasses' }, 0]
@@ -73,8 +74,7 @@ router.get('/', (req, res) => {
 
 
     } else {
-
-        // return root level documents 
+        // return all root level documents 
         query = DndChar.find({}, transformDocumentsProjection);
 
     }

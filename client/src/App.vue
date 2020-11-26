@@ -44,7 +44,7 @@ export default {
       animateRows: true,
       rowModelType: "serverSide",
       treeData: true,
-      isServerSideGroup: (dataItem) => dataItem.group,
+      isServerSideGroup: (dataItem) => dataItem.isGroup,
       getServerSideGroupKey: (dataItem) => dataItem._id,
     };
   },
