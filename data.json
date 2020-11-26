@@ -75,10 +75,10 @@
                         "charClass": "Assassin",
                         "subclasses": [
                             {
-                                "charClass": "test1"
+                                "charClass": "test3"
                             },
                             {
-                                "charClass": "test2"
+                                "charClass": "test4"
                             }
                         ]
                     }

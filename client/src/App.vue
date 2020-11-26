@@ -32,6 +32,7 @@ export default {
       defaultColDef: {
         width: 240,
         resizable: true,
+        sortable: true,
       },
       autoGroupColumnDef: {
         cellRendererParams: {
@@ -44,7 +45,7 @@ export default {
       rowModelType: "serverSide",
       treeData: true,
       isServerSideGroup: (dataItem) => dataItem.group,
-      getServerSideGroupKey: (dataItem) => dataItem.id,
+      getServerSideGroupKey: (dataItem) => dataItem._id,
     };
   },
   methods: {
@@ -61,19 +62,11 @@ export default {
 function createServerSideDatasource() {
   class ServerSideDataSource {
     getRows(params) {
-      console.log("params", params);
       const { request, successCallback, failCallback } = params;
-      const { startRow, endRow, groupKeys } = request;
+      const { startRow, endRow, groupKeys, sortModel } = request;
 
       console.log("request", request);
-
-      // function transformRows(rows) {
-      //   return rows.map((row) => ({
-      //     charClass: row.charClass,
-      //     id: row._id,
-      //     group: true,
-      //   }));
-      // }
+      console.log("sortModel", sortModel);
 
       axios
         .get("/api/dndchars", {
@@ -81,6 +74,7 @@ function createServerSideDatasource() {
             startRow,
             endRow,
             groupKeys,
+            sortModel,
           },
           // qs allows us to pass an array in the config params
           paramsSerializer: (params) => qs.stringify(params),
@@ -88,50 +82,11 @@ function createServerSideDatasource() {
         .then((res) => {
           console.log("response data", res.data);
 
-          // let rows = transformRows(res.data);
           successCallback(res.data, res.data.length);
         })
         .catch((err) => {
           failCallback(() => console.log("failed"));
         });
-      //   axios
-      //     .get("/api/dndchars")
-      //     .then((res) => {
-      //       let rows = this.extractRowsFromResponse(res.data);
-      //       setTimeout(() => {
-      //         params.successCallback(rows, rows.length);
-      //       }, 500);
-      //     })
-      //     .catch((err) => console.log(err));
-      // }
-      // extractRowsFromResponse(data) {
-      //   console.log("data before", data);
-      //   let rowData = [];
-
-      //   function doSomething(arr) {
-      //     arr.forEach((row) => {
-      //       rowData.push(transformRow(row));
-      //       if (row.hasOwnProperty("subclasses")) {
-      //         doSomething(row.subclasses);
-      //       }
-      //     });
-      //   }
-
-      //   function transformRow(row) {
-      //     const { charClass, _id, subclasses } = row;
-
-      //     return {
-      //       charClass,
-      //       id: _id,
-      //       group: subclasses.length > 0,
-      //     };
-      //   }
-
-      //   doSomething(data);
-
-      //   console.log(rowData);
-
-      // return rowData;
     }
   }
   return new ServerSideDataSource();

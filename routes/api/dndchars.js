@@ -12,29 +12,41 @@ router.get('/', (req, res) => {
     let {
         startRow,
         endRow,
-        groupKeys = []
+        groupKeys = [],
+        sortModel
     } = req.query;
 
     startRow = parseInt(startRow);
     endRow = parseInt(endRow);
 
-    console.log('params', { startRow, endRow, groupKeys });
+    console.log('params', { startRow, endRow, groupKeys, sortModel });
+
+    // ** ensure order 
+    // account for start and endRows -- .skip() and .limit()
 
 
-    const transformDocuments = documents => documents.map(doc => ({
-        id: doc._id,
-        charClass: doc.charClass,
-        group: doc.subclasses.length > 0
-    }));
 
 
-    if (groupKeys.length === 0) {
-        DndChar.find({})
-            .then(documents => transformDocuments(documents))
-            .then(result => res.json(result));
+    let query;
 
-    } else {
+    // ** add grouping to query  ** //
 
+    let transformDocumentsProjection = {
+        'charClass': 1,
+        'group': {
+            '$cond': {
+                'if': {
+                    '$gt': [{ '$size': '$subclasses' }, 0]
+                },
+                'then': true,
+                'else': false
+            }
+        }
+    }
+
+    if (groupKeys.length > 0) {
+
+        // return sub-documents for appropriate group
         let aggregationPipeline = [];
 
         groupKeys.forEach(groupKey => {
@@ -53,11 +65,25 @@ router.get('/', (req, res) => {
             })
         });
 
-        DndChar.aggregate(aggregationPipeline)
-            .then(documents => transformDocuments(documents))
-            .then(result => res.json(result));
+        aggregationPipeline.push({
+            '$project': transformDocumentsProjection
+        });
+
+        query = DndChar.aggregate(aggregationPipeline);
+
+
+    } else {
+
+        // return root level documents 
+        query = DndChar.find({}, transformDocumentsProjection);
 
     }
+
+
+    // ** execute query ** 
+
+    query
+        .then(result => res.json(result));
 
 });
 
