@@ -16,13 +16,9 @@ router.get('/', (req, res) => {
         sortModel = []
     } = req.query;
 
-    startRow = parseInt(startRow);
-    endRow = parseInt(endRow);
+    [startRow, endRow] = [startRow, endRow].map(Number)
 
     console.log('params', { startRow, endRow, groupKeys, sortModel });
-
-    // ** ensure order 
-    // account for start and endRows -- .skip() and .limit()
 
 
 
@@ -46,7 +42,7 @@ router.get('/', (req, res) => {
 
     if (groupKeys.length > 0) {
 
-        // return sub-documents for appropriate group
+        // return sub-documents for correct group
         let aggregationPipeline = [];
 
         groupKeys.forEach(groupKey => {
@@ -78,11 +74,16 @@ router.get('/', (req, res) => {
     }
 
 
+    // ** filtering **
+
+    // query = query.find({ charClass: 'Wizard' })
+
+
     // ** sorting ** 
 
-    let sorting = sortModel.length > 0
+    let sortingApplied = sortModel.length > 0
 
-    if (sorting) {
+    if (sortingApplied) {
         let sortQuery = {};
         sortModel.forEach(column => {
             sortQuery[column.colId] = column.sort;
@@ -96,7 +97,7 @@ router.get('/', (req, res) => {
 
     query.exec((err, result) => {
         if (err) {
-            console.log('error', error);
+            console.log('error in query', error);
             // handler error*****
         }
         res.json(result);

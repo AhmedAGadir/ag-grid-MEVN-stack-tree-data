@@ -14,3 +14,8 @@ find a way to close mongodb connection after exiting npm run dev
 https://stackoverflow.com/questions/37571997/nodejs-run-command-when-script-is-terminated
 
 https://docs.mongodb.com/manual/tutorial/write-scripts-for-the-mongo-shell/
+
+ // ** ensure order 
+    // account for start and endRows -- .skip() and .limit()
+    // handle errors - res.send(5xx)...
+    

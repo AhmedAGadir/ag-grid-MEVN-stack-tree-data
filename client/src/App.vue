@@ -33,6 +33,7 @@ export default {
         width: 240,
         resizable: true,
         sortable: true,
+        filter: true,
       },
       autoGroupColumnDef: {
         cellRendererParams: {
@@ -83,7 +84,7 @@ function createServerSideDatasource() {
             groupKeys,
             sortModel,
           },
-          // qs allows us to pass an array in the config params
+          // qs allows us to pass arrays in the GET request config
           paramsSerializer: (params) => qs.stringify(params),
         })
         .then((res) => {
