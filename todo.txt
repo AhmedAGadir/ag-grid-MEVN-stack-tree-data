@@ -7,7 +7,7 @@ treedata
 
 larger dataset
 
-handle errors
+handle errors, failed requests
 
 find a way to close mongodb connection after exiting npm run dev
 
@@ -18,4 +18,7 @@ https://docs.mongodb.com/manual/tutorial/write-scripts-for-the-mongo-shell/
  // ** ensure order 
     // account for start and endRows -- .skip() and .limit()
     // handle errors - res.send(5xx)...
-    
+
+
+new thumbnail 
+

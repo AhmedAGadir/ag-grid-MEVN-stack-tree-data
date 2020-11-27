@@ -85,8 +85,8 @@ router.get('/', (req, res) => {
 
     if (sortingApplied) {
         let sortQuery = {};
-        sortModel.forEach(column => {
-            sortQuery[column.colId] = column.sort;
+        sortModel.forEach(({ colId, sort }) => {
+            sortQuery[colId] = sort;
         });
         query.sort(sortQuery)
     }
