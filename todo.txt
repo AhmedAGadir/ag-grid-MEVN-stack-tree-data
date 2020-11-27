@@ -22,3 +22,5 @@ https://docs.mongodb.com/manual/tutorial/write-scripts-for-the-mongo-shell/
 
 new thumbnail 
 
+only initDatabase once -- mongoose.once
+maybe this isnt possible because of nodemon ^^^  

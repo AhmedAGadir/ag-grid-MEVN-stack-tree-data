@@ -106,6 +106,113 @@ router.get('/', (req, res) => {
 });
 
 
+// @route GET api/dndchars/values/:field
+// @desc get all dnd characters
+// @access Public
+router.get('/values/:field', (req, res) => {
+    console.log('req.params.field', req.params.field);
+
+    // we could fetch all of the data and then map over it here 
+    // but were going to do this using a query
+
+    // DndChar.aggregate
+    // create an empty array for the field
+
+
+    function retrieveValuesRecursively(count = 0) {
+        console.log('count', count)
+
+        let query;
+
+        if (count === 0) {
+            query = DndChar.aggregate([{
+                '$group': {
+                    '_id': null,
+                    'values': {
+                        '$addToSet': '$charClass'
+                    },
+                    'subclasses': {
+                        '$addToSet': '$subclasses'
+                    }
+                }
+            }])
+
+        } else {
+
+            let aggregationPipeline = [];
+
+            aggregationPipeline.push({
+                '$group': {
+                    '_id': null,
+                    'values': {
+                        '$addToSet': '$charClass'
+                    },
+                    'subclasses': {
+                        '$addToSet': '$subclasses'
+                    }
+                }
+            });
+
+            for (let i = 0; i < count; i++) {
+                aggregationPipeline.push({
+                    '$project': {
+                        'values': 1,
+                        'subclasses': {
+                            '$reduce': {
+                                'input': '$subclasses',
+                                'initialValue': [],
+                                'in': {
+                                    '$concatArrays': [
+                                        '$$value', '$$this'
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }, {
+                    '$unwind': {
+                        'path': '$subclasses'
+                    }
+                }, {
+                    '$project': {
+                        '_id': 0,
+                        'values': 1,
+                        'charClass': '$subclasses.charClass',
+                        'subclasses': '$subclasses.subclasses'
+                    }
+                }, {
+                    '$group': {
+                        '_id': null,
+                        'values': {
+                            '$addToSet': '$charClass'
+                        },
+                        'subclasses': {
+                            '$addToSet': '$subclasses'
+                        }
+                    }
+                })
+            }
+
+            query = DndChar.aggregate(aggregationPipeline);
+        }
+
+        query.then((documents) => {
+            let data = documents[0];
+            console.log('data', data);
+            let allValuesRetrieved = data.subclasses.length === 0;
+
+            if (allValuesRetrieved) {
+                res.send(data.values);
+            } else {
+                count++
+                retrieveValuesRecursively(count);
+            }
+        })
+    }
+
+    retrieveValuesRecursively();
+});
+
 
 // @route POST api/dndchars
 // @desc create a new dnd character

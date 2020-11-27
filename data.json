@@ -56,7 +56,7 @@
                 "charClass": "Thief1",
                 "subclasses": [
                     {
-                        "charClass": "Assassin",
+                        "charClass": "Assassin1",
                         "subclasses": [
                             {
                                 "charClass": "test1"

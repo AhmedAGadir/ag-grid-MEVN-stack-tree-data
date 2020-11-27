@@ -11,13 +11,14 @@
 <script>
 import { AgGridVue } from "ag-grid-vue";
 import "ag-grid-enterprise";
-import axios from "axios";
-import qs from "qs";
+
+import ServerSideDatasource from "./ServerSideDatasource";
 
 export default {
   name: "App",
   data() {
     return {
+      serverSideDatasource: null,
       gridApi: null,
       columnApi: null,
       gridOptions: {},
@@ -27,21 +28,35 @@ export default {
     AgGridVue,
   },
   beforeMount() {
+    this.serverSideDatasource = new ServerSideDatasource();
+
     this.gridOptions = {
-      columnDefs: [],
+      columnDefs: [
+        {
+          field: "charClass",
+          cellRenderer: "agGroupCellRenderer",
+          filterParams: {
+            values: (params) => {
+              const {
+                colDef: { field },
+                success,
+              } = params;
+
+              this.serverSideDatasource
+                .getFilterValues(field)
+                .then((values) => success(values));
+            },
+          },
+        },
+      ],
       defaultColDef: {
         width: 240,
         resizable: true,
         sortable: true,
         filter: true,
+        floatingFilter: true,
       },
-      autoGroupColumnDef: {
-        cellRendererParams: {
-          innerRenderer: function (params) {
-            return params.data.charClass;
-          },
-        },
-      },
+      groupSuppressAutoColumn: true,
       animateRows: true,
       rowModelType: "serverSide",
       treeData: true,
@@ -54,51 +69,10 @@ export default {
       this.gridApi = params.api;
       this.columnApi = params.columnApi;
 
-      var datasource = createServerSideDatasource();
-      params.api.setServerSideDatasource(datasource);
+      params.api.setServerSideDatasource(this.serverSideDatasource);
     },
   },
 };
-
-function createServerSideDatasource() {
-  class ServerSideDataSource {
-    getRows(params) {
-      const { request, successCallback, failCallback } = params;
-      let { startRow, endRow, groupKeys, sortModel } = request;
-
-      console.log("request", request);
-
-      if (sortModel) {
-        sortModel.forEach((column) => {
-          if (column.colId === "ag-Grid-AutoColumn") {
-            column.colId = "charClass";
-          }
-        });
-      }
-
-      axios
-        .get("/api/dndchars", {
-          params: {
-            startRow,
-            endRow,
-            groupKeys,
-            sortModel,
-          },
-          // qs allows us to pass arrays in the GET request config
-          paramsSerializer: (params) => qs.stringify(params),
-        })
-        .then((res) => {
-          console.log("response data", res.data);
-
-          successCallback(res.data, res.data.length);
-        })
-        .catch((err) => {
-          failCallback(() => console.log("failed"));
-        });
-    }
-  }
-  return new ServerSideDataSource();
-}
 </script>
 
 <style lang="scss">
