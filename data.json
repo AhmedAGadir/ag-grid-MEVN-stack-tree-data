@@ -78,7 +78,12 @@
                                 "charClass": "test3"
                             },
                             {
-                                "charClass": "test4"
+                                "charClass": "test4",
+                                "subclasses": [
+                                    {
+                                        "charClass": "Shinobi"
+                                    }
+                                ]
                             }
                         ]
                     }

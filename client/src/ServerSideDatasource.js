@@ -21,7 +21,6 @@ class ServerSideDataSource {
             })
             .then((res) => {
                 console.log("response data", res.data);
-
                 successCallback(res.data, res.data.length);
             })
             .catch((err) => {

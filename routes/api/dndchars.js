@@ -124,83 +124,81 @@ router.get('/values/:field', (req, res) => {
 
         let query;
 
-        if (count === 0) {
-            query = DndChar.aggregate([{
+
+        let aggregationPipeline = [];
+
+        aggregationPipeline.push(
+            {
                 '$group': {
-                    '_id': null,
-                    'values': {
-                        '$addToSet': '$charClass'
-                    },
-                    'subclasses': {
-                        '$addToSet': '$subclasses'
+                    _id: null,
+                    valuesToConcat: { "$addToSet": "$charClass" },
+                    subclasses: { "$addToSet": "$subclasses" }
+                },
+            },
+            {
+                "$project": {
+                    values: { $concatArrays: [[], "$valuesToConcat"] },
+                    subclasses: {
+                        $reduce: {
+                            input: "$subclasses",
+                            initialValue: [],
+                            in: { $concatArrays: ["$$value", "$$this"] }
+                        }
                     }
                 }
-            }])
+            }
+        );
 
-        } else {
-
-            let aggregationPipeline = [];
-
-            aggregationPipeline.push({
-                '$group': {
-                    '_id': null,
-                    'values': {
-                        '$addToSet': '$charClass'
-                    },
-                    'subclasses': {
-                        '$addToSet': '$subclasses'
-                    }
-                }
-            });
+        if (count > 0) {
 
             for (let i = 0; i < count; i++) {
-                aggregationPipeline.push({
-                    '$project': {
-                        'values': 1,
-                        'subclasses': {
-                            '$reduce': {
-                                'input': '$subclasses',
-                                'initialValue': [],
-                                'in': {
-                                    '$concatArrays': [
-                                        '$$value', '$$this'
-                                    ]
+                aggregationPipeline.push(
+                    {
+                        '$unwind': {
+                            'path': '$subclasses'
+                        }
+                    },
+                    {
+                        '$project': {
+                            _id: 0,
+                            values: 1,
+                            value: '$subclasses.charClass',
+                            subclasses: '$subclasses.subclasses'
+                        }
+                    },
+                    {
+                        "$group": {
+                            _id: null,
+                            values: { "$first": "$values" },
+                            valuesToConcat: { "$addToSet": "$value" },
+                            subclasses: { "$addToSet": "$subclasses" }
+                        }
+                    },
+                    {
+                        "$project": {
+                            values: { $concatArrays: ["$values", "$valuesToConcat"] },
+                            subclasses: {
+                                $reduce: {
+                                    input: "$subclasses",
+                                    initialValue: [],
+                                    in: { $concatArrays: ["$$value", "$$this"] }
                                 }
                             }
                         }
                     }
-                }, {
-                    '$unwind': {
-                        'path': '$subclasses'
-                    }
-                }, {
-                    '$project': {
-                        '_id': 0,
-                        'values': 1,
-                        'charClass': '$subclasses.charClass',
-                        'subclasses': '$subclasses.subclasses'
-                    }
-                }, {
-                    '$group': {
-                        '_id': null,
-                        'values': {
-                            '$addToSet': '$charClass'
-                        },
-                        'subclasses': {
-                            '$addToSet': '$subclasses'
-                        }
-                    }
-                })
+                )
             }
-
-            query = DndChar.aggregate(aggregationPipeline);
         }
+
+        query = DndChar.aggregate(aggregationPipeline);
+
 
         query.then((documents) => {
             let data = documents[0];
-            console.log('data', data);
             let allValuesRetrieved = data.subclasses.length === 0;
 
+            // console.log('data values got *********', data);
+            console.log('allvaluesretrieved', data);
             if (allValuesRetrieved) {
                 res.send(data.values);
             } else {
