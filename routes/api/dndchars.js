@@ -122,9 +122,6 @@ router.get('/values/:field', (req, res) => {
     function retrieveValuesRecursively(count = 0) {
         console.log('count', count)
 
-        let query;
-
-
         let aggregationPipeline = [];
 
         aggregationPipeline.push(
@@ -190,22 +187,19 @@ router.get('/values/:field', (req, res) => {
             }
         }
 
-        query = DndChar.aggregate(aggregationPipeline);
+        DndChar
+            .aggregate(aggregationPipeline)
+            .then((documents) => {
+                let document = documents[0];
+                let allValuesRetrieved = document.subclasses.length === 0;
 
-
-        query.then((documents) => {
-            let data = documents[0];
-            let allValuesRetrieved = data.subclasses.length === 0;
-
-            // console.log('data values got *********', data);
-            console.log('allvaluesretrieved', data);
-            if (allValuesRetrieved) {
-                res.send(data.values);
-            } else {
-                count++
-                retrieveValuesRecursively(count);
-            }
-        })
+                if (allValuesRetrieved) {
+                    res.send(document.values);
+                } else {
+                    count++
+                    retrieveValuesRecursively(count);
+                }
+            })
     }
 
     retrieveValuesRecursively();
