@@ -112,14 +112,11 @@ router.get('/', (req, res) => {
 router.get('/values/:field', (req, res) => {
     console.log('req.params.field', req.params.field);
 
-    // we could fetch all of the data and then map over it here 
-    // but were going to do this using a query
+    // we could simply request all of the data using DndChar.find({})
+    // and then transform the response here
+    // but were going to do this using a query as a mongodb learning exercise
 
-    // DndChar.aggregate
-    // create an empty array for the field
-
-
-    function retrieveValuesRecursively(count = 0) {
+    function retrieveValuesRecursively(field, count = 0) {
         console.log('count', count)
 
         let aggregationPipeline = [];
@@ -128,7 +125,7 @@ router.get('/values/:field', (req, res) => {
             {
                 '$group': {
                     _id: null,
-                    valuesToConcat: { "$addToSet": "$charClass" },
+                    valuesToConcat: { "$addToSet": `$${field}` },
                     subclasses: { "$addToSet": "$subclasses" }
                 },
             },
@@ -159,7 +156,7 @@ router.get('/values/:field', (req, res) => {
                         '$project': {
                             _id: 0,
                             values: 1,
-                            value: '$subclasses.charClass',
+                            value: `$subclasses.${field}`,
                             subclasses: '$subclasses.subclasses'
                         }
                     },
@@ -197,12 +194,16 @@ router.get('/values/:field', (req, res) => {
                     res.send(document.values);
                 } else {
                     count++
-                    retrieveValuesRecursively(count);
+                    retrieveValuesRecursively(field, count);
                 }
             })
     }
 
-    retrieveValuesRecursively();
+    let field = req.params.field;
+    if (field === 'charclass') {
+        field = 'charClass';
+    }
+    retrieveValuesRecursively(field);
 });
 
 
