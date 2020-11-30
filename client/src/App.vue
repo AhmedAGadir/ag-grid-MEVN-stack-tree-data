@@ -44,7 +44,10 @@ export default {
 
               this.serverSideDatasource
                 .getFilterValues(field)
-                .then((values) => success(values));
+                .then((values) => {
+                  console.log("filter values", values);
+                  success(values);
+                });
             },
           },
         },
@@ -56,7 +59,12 @@ export default {
         filter: true,
         floatingFilter: true,
       },
-      groupSuppressAutoColumn: true,
+      // groupSuppressAutoColumn: true,
+      autoGroupColumnDef: {
+        cellRendererParams: {
+          innerRenderer: (params) => params.data.charClass,
+        },
+      },
       animateRows: true,
       rowModelType: "serverSide",
       treeData: true,

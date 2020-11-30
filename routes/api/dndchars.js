@@ -116,9 +116,7 @@ router.get('/values/:field', (req, res) => {
     // and then transform the response here
     // but were going to do this using a query as a mongodb learning exercise
 
-    function retrieveValuesRecursively(field, count = 0) {
-        console.log('count', count)
-
+    function getValues(field, cb, count = 0) {
         let aggregationPipeline = [];
 
         aggregationPipeline.push(
@@ -191,19 +189,26 @@ router.get('/values/:field', (req, res) => {
                 let allValuesRetrieved = document.subclasses.length === 0;
 
                 if (allValuesRetrieved) {
-                    res.send(document.values);
+                    cb(document.values);
                 } else {
                     count++
-                    retrieveValuesRecursively(field, count);
+                    getValues(field, cb, count);
                 }
             })
     }
 
+
     let field = req.params.field;
+
     if (field === 'charclass') {
         field = 'charClass';
     }
-    retrieveValuesRecursively(field);
+
+    const callback = values => {
+        res.send(values);
+    }
+
+    getValues(field, callback);
 });
 
 

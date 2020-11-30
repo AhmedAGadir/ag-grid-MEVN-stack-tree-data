@@ -29,9 +29,8 @@ class ServerSideDataSource {
     }
     getFilterValues(field) {
         return new Promise((resolve, reject) => {
-
             axios.get(`/api/dndchars/values/${field}`)
-                .then(result => resolve(result))
+                .then(response => resolve(response.data))
                 .catch(err => reject(err));
         })
     }
