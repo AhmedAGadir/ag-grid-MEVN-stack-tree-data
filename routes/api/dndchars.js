@@ -20,14 +20,12 @@ router.get('/', (req, res) => {
 
     console.log('params', { startRow, endRow, groupKeys, sortModel });
 
-
-
     // note mongoose queries are NOT promises: https://mongoosejs.com/docs/queries.html#queries-are-not-promises
     let query;
 
     // ** grouping  ** //
 
-    let transformDocumentsProjection = {
+    const groupingProjection = {
         'charClass': 1,
         'isGroup': {
             '$cond': {
@@ -38,12 +36,12 @@ router.get('/', (req, res) => {
                 'else': false
             }
         }
-    }
+    };
 
     if (groupKeys.length > 0) {
 
         // return sub-documents for correct group
-        let aggregationPipeline = [];
+        const aggregationPipeline = [];
 
         groupKeys.forEach(groupKey => {
             aggregationPipeline.push({
@@ -62,36 +60,31 @@ router.get('/', (req, res) => {
         });
 
         aggregationPipeline.push({
-            '$project': transformDocumentsProjection
+            '$project': groupingProjection
         });
 
         query = DndChar.aggregate(aggregationPipeline);
 
-
     } else {
         // return all root level documents 
-        query = DndChar.find({}, transformDocumentsProjection);
+        query = DndChar.find({}, groupingProjection);
     }
-
 
     // ** filtering **
 
     // query = query.find({ charClass: 'Wizard' })
 
-
     // ** sorting ** 
 
-    let sortingApplied = sortModel.length > 0
+    const sortingApplied = sortModel.length > 0;
 
     if (sortingApplied) {
-        let sortQuery = {};
+        const sortQuery = {};
         sortModel.forEach(({ colId, sort }) => {
             sortQuery[colId] = sort;
         });
-        query.sort(sortQuery)
+        query.sort(sortQuery);
     }
-
-
 
     // ** execute query ** 
 
@@ -110,105 +103,27 @@ router.get('/', (req, res) => {
 // @desc get all dnd characters
 // @access Public
 router.get('/values/:field', (req, res) => {
-    console.log('req.params.field', req.params.field);
 
-    // we could simply request all of the data using DndChar.find({})
-    // and then transform the response here
-    // but were going to do this using a query as a mongodb learning exercise
-
-    function getValues(field, cb, count = 0) {
-        let aggregationPipeline = [];
-
-        aggregationPipeline.push(
-            {
-                '$group': {
-                    _id: null,
-                    valuesToConcat: { "$addToSet": `$${field}` },
-                    subclasses: { "$addToSet": "$subclasses" }
-                },
-            },
-            {
-                "$project": {
-                    values: { $concatArrays: [[], "$valuesToConcat"] },
-                    subclasses: {
-                        $reduce: {
-                            input: "$subclasses",
-                            initialValue: [],
-                            in: { $concatArrays: ["$$value", "$$this"] }
-                        }
-                    }
-                }
-            }
-        );
-
-        if (count > 0) {
-
-            for (let i = 0; i < count; i++) {
-                aggregationPipeline.push(
-                    {
-                        '$unwind': {
-                            'path': '$subclasses'
-                        }
-                    },
-                    {
-                        '$project': {
-                            _id: 0,
-                            values: 1,
-                            value: `$subclasses.${field}`,
-                            subclasses: '$subclasses.subclasses'
-                        }
-                    },
-                    {
-                        "$group": {
-                            _id: null,
-                            values: { "$first": "$values" },
-                            valuesToConcat: { "$addToSet": "$value" },
-                            subclasses: { "$addToSet": "$subclasses" }
-                        }
-                    },
-                    {
-                        "$project": {
-                            values: { $concatArrays: ["$values", "$valuesToConcat"] },
-                            subclasses: {
-                                $reduce: {
-                                    input: "$subclasses",
-                                    initialValue: [],
-                                    in: { $concatArrays: ["$$value", "$$this"] }
-                                }
-                            }
-                        }
-                    }
-                )
-            }
+    function getValues(arr, field, values = []) {
+        const subArr = [];
+        arr.forEach(item => {
+            values.push(item[field]);
+            subArr.push(...item.subclasses);
+        });
+        if (subArr.length === 0) {
+            return values;
+        } else {
+            return getValues(subArr, field, values);
         }
-
-        DndChar
-            .aggregate(aggregationPipeline)
-            .then((documents) => {
-                let document = documents[0];
-                let allValuesRetrieved = document.subclasses.length === 0;
-
-                if (allValuesRetrieved) {
-                    cb(document.values);
-                } else {
-                    count++
-                    getValues(field, cb, count);
-                }
-            })
     }
 
-
-    let field = req.params.field;
-
-    if (field === 'charclass') {
-        field = 'charClass';
-    }
-
-    const callback = values => {
-        res.send(values);
-    }
-
-    getValues(field, callback);
+    DndChar
+        .find({})
+        .then(documents => {
+            const field = req.params.field;
+            const values = getValues(documents, field);
+            res.send(values);
+        });
 });
 
 

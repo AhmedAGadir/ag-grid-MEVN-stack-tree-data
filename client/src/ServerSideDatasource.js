@@ -4,7 +4,7 @@ import qs from "qs";
 class ServerSideDataSource {
     getRows(params) {
         const { request, successCallback, failCallback } = params;
-        let { startRow, endRow, groupKeys, sortModel } = request;
+        const { startRow, endRow, groupKeys, sortModel } = request;
 
         console.log("request", request);
 
@@ -28,6 +28,9 @@ class ServerSideDataSource {
             });
     }
     getFilterValues(field) {
+        if (field === 'charclass') {
+            field = 'charClass';
+        }
         return new Promise((resolve, reject) => {
             axios.get(`/api/dndchars/values/${field}`)
                 .then(response => resolve(response.data))
