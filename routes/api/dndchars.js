@@ -13,33 +13,86 @@ router.get('/', (req, res) => {
         startRow,
         endRow,
         groupKeys = [],
-        sortModel = []
+        sortModel = [],
+        filterModel = {}
     } = req.query;
 
     [startRow, endRow] = [startRow, endRow].map(Number)
 
-    console.log('params', { startRow, endRow, groupKeys, sortModel });
+    console.log('params', { startRow, endRow, groupKeys, sortModel, filterModel });
+
+    // if (Object.keys(filterModel).length > 0) {
+    //     console.log('filtering...')
+    //     DndChar
+    //         .find({})
+    //         .lean()
+    //         .then(documents => {
+    //             // filterModel: { charClass: { values: [Array], filterType: 'set' } }
+    //             //     { 
+    //             //         charClass: { 
+    //             //             values: ['mage'],
+    //             //             filterType: 'set'
+    //             //         },
+    //             //         [...]
+    //             //     }
+
+    //             let result = [];
+
+    //             function filterModelIncludes(value) {
+    //                 return filterModel.charClass.values.includes(value);
+    //             }
+
+    //             function checkDocuments(docs) {
+    //                 docs.forEach(doc => {
+    //                     console.log('filterincludsesdoc', doc.charClass, filterModelIncludes(doc.charClass));
+    //                     if (filterModelIncludes(doc.charClass)) {
+    //                         result.push({ ...doc });
+    //                     }
+    //                     if (doc.subclasses.length > 0) {
+    //                         doc.subclasses.forEach(subDoc => {
+    //                             // see if i can do this with query too
+    //                             // replaceroot add reference to current 
+    //                             subDoc.parent = doc;
+    //                         });
+    //                         checkDocuments(doc.subclasses);
+    //                     }
+    //                 });
+    //             };
+
+    //             checkDocuments(documents);
+
+    //             console.log('result', result)
+
+    //             let finalResult = [];
+
+    //             result.forEach(doc => {
+    //                 while (doc) {
+    //                     finalResult.unshift({
+    //                         _id: doc._id,
+    //                         charClass: doc.charClass,
+    //                         isGroup: doc.subclasses.length > 0
+    //                     });
+    //                     doc = doc.parent;
+    //                 }
+    //             })
+
+
+    //             console.log('final result', finalResult);
+    //             res.json(finalResult);
+    //             return;
+    //         })
+    // }
+
+
 
     // note mongoose queries are NOT promises: https://mongoosejs.com/docs/queries.html#queries-are-not-promises
     let query;
 
     // ** grouping  ** //
 
-    const groupingProjection = {
-        'charClass': 1,
-        'isGroup': {
-            '$cond': {
-                'if': {
-                    '$gt': [{ '$size': '$subclasses' }, 0]
-                },
-                'then': true,
-                'else': false
-            }
-        }
-    };
+    const isGrouping = groupKeys.length > 0;
 
-    if (groupKeys.length > 0) {
-
+    if (isGrouping) {
         // return sub-documents for correct group
         const aggregationPipeline = [];
 
@@ -59,26 +112,47 @@ router.get('/', (req, res) => {
             })
         });
 
-        aggregationPipeline.push({
-            '$project': groupingProjection
-        });
-
         query = DndChar.aggregate(aggregationPipeline);
 
     } else {
-        // return all root level documents 
-        query = DndChar.find({}, groupingProjection);
+        // return root level documents 
+        query = DndChar.find({});
     }
 
     // ** filtering **
 
-    // query = query.find({ charClass: 'Wizard' })
+    const isFiltering = Object.keys(filterModel).length > 0;
+
+    if (isFiltering) {
+        query
+            .select({
+                charClass: 1,
+                subClasses: 1,
+                filterModel: filterModel
+            })
+            .find({
+                '$where': function () {
+                    let values = this.filterModel.charClass.values;
+                    function doesDocContainValue(doc) {
+                        if (values.includes(doc.charClass)) {
+                            return true;
+                        }
+                        if (!doc.hasOwnProperty('subclasses')) {
+                            return false;
+                        }
+                        return doc.subclasses.some(doc => doesDocContainValue(doc));
+                    }
+
+                    return doesDocContainValue(this);
+                }
+            })
+    }
 
     // ** sorting ** 
 
-    const sortingApplied = sortModel.length > 0;
+    const isSorting = sortModel.length > 0;
 
-    if (sortingApplied) {
+    if (isSorting) {
         const sortQuery = {};
         sortModel.forEach(({ colId, sort }) => {
             sortQuery[colId] = sort;
@@ -86,15 +160,29 @@ router.get('/', (req, res) => {
         query.sort(sortQuery);
     }
 
-    // ** execute query ** 
+    // *** project and execute ***
 
-    query.exec((err, result) => {
-        if (err) {
-            console.log('error in query', error);
-            // handler error*****
-        }
-        res.json(result);
-    })
+    query
+        .select({
+            'charClass': 1,
+            'isGroup': {
+                '$cond': {
+                    'if': {
+                        '$gt': [{ '$size': '$subclasses' }, 0]
+                    },
+                    'then': true,
+                    'else': false
+                }
+            }
+        })
+        // .lean()
+        .exec((err, result) => {
+            if (err) {
+                console.log('error in query', error);
+                // handler error*****
+            }
+            res.json(result);
+        })
 
 });
 
@@ -104,16 +192,16 @@ router.get('/', (req, res) => {
 // @access Public
 router.get('/values/:field', (req, res) => {
 
-    function getValues(arr, field, values = []) {
-        const subArr = [];
-        arr.forEach(item => {
-            values.push(item[field]);
-            subArr.push(...item.subclasses);
+    function getValues(docs, field, values = []) {
+        const subDocs = [];
+        docs.forEach(record => {
+            values.push(record[field]);
+            subDocs.push(...record.subclasses);
         });
-        if (subArr.length === 0) {
+        if (subDocs.length === 0) {
             return values;
         } else {
-            return getValues(subArr, field, values);
+            return getValues(subDocs, field, values);
         }
     }
 

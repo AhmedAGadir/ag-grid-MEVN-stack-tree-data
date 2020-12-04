@@ -4,7 +4,12 @@ import qs from "qs";
 class ServerSideDataSource {
     getRows(params) {
         const { request, successCallback, failCallback } = params;
-        const { startRow, endRow, groupKeys, sortModel } = request;
+        const {
+            startRow,
+            endRow,
+            groupKeys,
+            sortModel,
+            filterModel } = request;
 
         console.log("request", request);
 
@@ -15,6 +20,7 @@ class ServerSideDataSource {
                     endRow,
                     groupKeys,
                     sortModel,
+                    filterModel
                 },
                 // qs allows us to pass arrays in the GET request config
                 paramsSerializer: (params) => qs.stringify(params),
