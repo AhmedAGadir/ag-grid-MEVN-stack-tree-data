@@ -129,6 +129,7 @@ router.get('/', (req, res) => {
                 charClass: 1,
                 subClasses: 1,
                 filterModel: filterModel
+
             })
             .find({
                 '$where': function () {
