@@ -101,9 +101,7 @@ router.get('/', (req, res) => {
                 }
             },
             {
-                "$project": {
-                    filterModel: 0
-                }
+                "$unset": "filterModel"
             }
         )
 
