@@ -33,6 +33,7 @@ router.get('/', (req, res) => {
     const isGrouping = groupKeys.length > 0;
 
     if (isGrouping) {
+
         groupKeys.forEach(groupKey => {
             aggregationPipeline.push({
                 '$match': {
@@ -71,18 +72,6 @@ router.get('/', (req, res) => {
                                 function (charClass, subclasses, filterModel) {
                                     let values = filterModel.charClass.values;
 
-                                    function doesDocContainValue(doc) {
-                                        if (values.includes(doc.charClass)) {
-                                            return true;
-                                        }
-                                        
-                                        if (!doc.hasOwnProperty('subclasses')) {
-                                            return false;
-                                        }
-                                        
-                                        return doc.subclasses.some(doc => doesDocContainValue(doc));
-                                    }
-
                                     if (values.includes(charClass)) {
                                         return true;
                                     }
@@ -91,7 +80,17 @@ router.get('/', (req, res) => {
                                         return false;
                                     }
 
-                                    return subclasses.some(subclass => doesDocContainValue(subclass))
+                                    return subclasses.some(subclass => doesDocContainValue(subclass));
+
+                                    function doesDocContainValue(doc) {
+                                        if (values.includes(doc.charClass)) {
+                                            return true;
+                                        }
+                                        if (!doc.hasOwnProperty('subclasses')) {
+                                            return false;
+                                        }
+                                        return doc.subclasses.some(doc => doesDocContainValue(doc));
+                                    }
                                 }
                             `,
                             args: ["$charClass", "$subclasses", "$filterModel"],
