@@ -70,17 +70,6 @@ router.get('/', (req, res) => {
                         $function: {
                             body: `
                                 function (charClass, subclasses, filterModel) {
-                                    let values = filterModel.charClass.values;
-
-                                    if (values.includes(charClass)) {
-                                        return true;
-                                    }
-                                    
-                                    if (subclasses.length === 0) {
-                                        return false;
-                                    }
-
-                                    return subclasses.some(subclass => doesDocContainValue(subclass));
 
                                     function doesDocContainValue(doc) {
                                         if (values.includes(doc.charClass)) {
@@ -91,6 +80,18 @@ router.get('/', (req, res) => {
                                         }
                                         return doc.subclasses.some(doc => doesDocContainValue(doc));
                                     }
+
+                                    const values = filterModel.charClass.values;
+
+                                    if (values.includes(charClass)) {
+                                        return true;
+                                    }
+                                    
+                                    if (subclasses.length === 0) {
+                                        return false;
+                                    }
+
+                                    return subclasses.some(subclass => doesDocContainValue(subclass));
                                 }
                             `,
                             args: ["$charClass", "$subclasses", "$filterModel"],
