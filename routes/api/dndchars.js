@@ -21,81 +21,18 @@ router.get('/', (req, res) => {
 
     console.log('params', { startRow, endRow, groupKeys, sortModel, filterModel });
 
-    // if (Object.keys(filterModel).length > 0) {
-    //     console.log('filtering...')
-    //     DndChar
-    //         .find({})
-    //         .lean()
-    //         .then(documents => {
-    //             // filterModel: { charClass: { values: [Array], filterType: 'set' } }
-    //             //     { 
-    //             //         charClass: { 
-    //             //             values: ['mage'],
-    //             //             filterType: 'set'
-    //             //         },
-    //             //         [...]
-    //             //     }
-
-    //             let result = [];
-
-    //             function filterModelIncludes(value) {
-    //                 return filterModel.charClass.values.includes(value);
-    //             }
-
-    //             function checkDocuments(docs) {
-    //                 docs.forEach(doc => {
-    //                     console.log('filterincludsesdoc', doc.charClass, filterModelIncludes(doc.charClass));
-    //                     if (filterModelIncludes(doc.charClass)) {
-    //                         result.push({ ...doc });
-    //                     }
-    //                     if (doc.subclasses.length > 0) {
-    //                         doc.subclasses.forEach(subDoc => {
-    //                             // see if i can do this with query too
-    //                             // replaceroot add reference to current 
-    //                             subDoc.parent = doc;
-    //                         });
-    //                         checkDocuments(doc.subclasses);
-    //                     }
-    //                 });
-    //             };
-
-    //             checkDocuments(documents);
-
-    //             console.log('result', result)
-
-    //             let finalResult = [];
-
-    //             result.forEach(doc => {
-    //                 while (doc) {
-    //                     finalResult.unshift({
-    //                         _id: doc._id,
-    //                         charClass: doc.charClass,
-    //                         isGroup: doc.subclasses.length > 0
-    //                     });
-    //                     doc = doc.parent;
-    //                 }
-    //             })
-
-
-    //             console.log('final result', finalResult);
-    //             res.json(finalResult);
-    //             return;
-    //         })
-    // }
-
-
-
     // note mongoose queries are NOT promises: https://mongoosejs.com/docs/queries.html#queries-are-not-promises
     let query;
+
+    // start building aggregation pipeline for grouping and filtering 
+
+    const aggregationPipeline = [];
 
     // ** grouping  ** //
 
     const isGrouping = groupKeys.length > 0;
 
     if (isGrouping) {
-        // return sub-documents for correct group
-        const aggregationPipeline = [];
-
         groupKeys.forEach(groupKey => {
             aggregationPipeline.push({
                 '$match': {
@@ -112,11 +49,6 @@ router.get('/', (req, res) => {
             })
         });
 
-        query = DndChar.aggregate(aggregationPipeline);
-
-    } else {
-        // return root level documents 
-        query = DndChar.find({});
     }
 
     // ** filtering **
@@ -124,30 +56,74 @@ router.get('/', (req, res) => {
     const isFiltering = Object.keys(filterModel).length > 0;
 
     if (isFiltering) {
-        query
-            .select({
-                charClass: 1,
-                subClasses: 1,
-                filterModel: filterModel
 
-            })
-            .find({
-                '$where': function () {
-                    let values = this.filterModel.charClass.values;
-                    function doesDocContainValue(doc) {
-                        if (values.includes(doc.charClass)) {
-                            return true;
-                        }
-                        if (!doc.hasOwnProperty('subclasses')) {
-                            return false;
-                        }
-                        return doc.subclasses.some(doc => doesDocContainValue(doc));
-                    }
+        // aggregationPipeline.push(
+        //     {
+        //         "$match": {
+        //             "$function": function () {
+        //                 return this.charClass === 'Wizard'
+        //             }
+        //         }
+        //     }
+        // )
+        // query
+        //     .select({
+        //         charClass: 1,
+        //         subClasses: 1,
+        //         filterModel: filterModel
 
-                    return doesDocContainValue(this);
-                }
-            })
+        //     })
+        //     .then(docs => res.json(docs))
+        // return;
+        // .find({
+        //     '$where': function () {
+        //         return this.filterModel.charClass.values[0] === 'Bard';
+        //         let values = this.filterModel.charClass.values;
+        //         function doesDocContainValue(doc) {
+        //             if (values.includes(doc.charClass)) {
+        //                 return true;
+        //             }
+        //             if (!doc.hasOwnProperty('subclasses')) {
+        //                 return false;
+        //             }
+        //             return doc.subclasses.some(doc => doesDocContainValue(doc));
+        //         }
+
+        //         return doesDocContainValue(this);
+        //     }
+        // })
+        // .find({
+        //     '$or': [
+        //         { charClass: 'Warrior' },
+        //         { "subclasses.charClass": "Thief" }
+        //     ]
+        // })
+        // .aggregate([
+        //     {
+        //         "$project": {
+        //             test: 'foo'
+        //         }
+        //     }
+        // ])
     }
+
+    aggregationPipeline.push({
+        "$project": {
+            charClass: 1,
+            foo: 1,
+            'isGroup': {
+                '$cond': {
+                    'if': {
+                        '$gt': [{ '$size': '$subclasses' }, 0]
+                    },
+                    'then': true,
+                    'else': false
+                }
+            }
+        }
+    })
+
+    query = DndChar.aggregate(aggregationPipeline);
 
     // ** sorting ** 
 
@@ -161,25 +137,12 @@ router.get('/', (req, res) => {
         query.sort(sortQuery);
     }
 
-    // *** project and execute ***
+    // *** execute ***
 
     query
-        .select({
-            'charClass': 1,
-            'isGroup': {
-                '$cond': {
-                    'if': {
-                        '$gt': [{ '$size': '$subclasses' }, 0]
-                    },
-                    'then': true,
-                    'else': false
-                }
-            }
-        })
-        // .lean()
         .exec((err, result) => {
             if (err) {
-                console.log('error in query', error);
+                console.log('error in query', err);
                 // handler error*****
             }
             res.json(result);
