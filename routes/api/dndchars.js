@@ -17,7 +17,7 @@ router.get('/', (req, res) => {
         filterModel = {}
     } = req.query;
 
-    [startRow, endRow] = [startRow, endRow].map(Number)
+    [startRow, endRow] = [startRow, endRow].map(Number);
 
     console.log('params', { startRow, endRow, groupKeys, sortModel, filterModel });
 
@@ -57,60 +57,61 @@ router.get('/', (req, res) => {
 
     if (isFiltering) {
 
-        // aggregationPipeline.push(
-        //     {
-        //         "$match": {
-        //             "$function": function () {
-        //                 return this.charClass === 'Wizard'
-        //             }
-        //         }
-        //     }
-        // )
-        // query
-        //     .select({
-        //         charClass: 1,
-        //         subClasses: 1,
-        //         filterModel: filterModel
+        aggregationPipeline.push(
+            {
+                "$addFields": {
+                    filterModel: filterModel
+                }
+            },
+            {
+                "$match": {
+                    $expr: {
+                        $function: {
+                            body: `
+                                function (charClass, subclasses, filterModel) {
+                                    let values = filterModel.charClass.values;
 
-        //     })
-        //     .then(docs => res.json(docs))
-        // return;
-        // .find({
-        //     '$where': function () {
-        //         return this.filterModel.charClass.values[0] === 'Bard';
-        //         let values = this.filterModel.charClass.values;
-        //         function doesDocContainValue(doc) {
-        //             if (values.includes(doc.charClass)) {
-        //                 return true;
-        //             }
-        //             if (!doc.hasOwnProperty('subclasses')) {
-        //                 return false;
-        //             }
-        //             return doc.subclasses.some(doc => doesDocContainValue(doc));
-        //         }
+                                    function doesDocContainValue(doc) {
+                                        if (values.includes(doc.charClass)) {
+                                            return true;
+                                        }
+                                        
+                                        if (!doc.hasOwnProperty('subclasses')) {
+                                            return false;
+                                        }
+                                        
+                                        return doc.subclasses.some(doc => doesDocContainValue(doc));
+                                    }
 
-        //         return doesDocContainValue(this);
-        //     }
-        // })
-        // .find({
-        //     '$or': [
-        //         { charClass: 'Warrior' },
-        //         { "subclasses.charClass": "Thief" }
-        //     ]
-        // })
-        // .aggregate([
-        //     {
-        //         "$project": {
-        //             test: 'foo'
-        //         }
-        //     }
-        // ])
+                                    if (values.includes(charClass)) {
+                                        return true;
+                                    }
+                                    
+                                    if (subclasses.length === 0) {
+                                        return false;
+                                    }
+
+                                    return subclasses.some(subclass => doesDocContainValue(subclass))
+                                }
+                            `,
+                            args: ["$charClass", "$subclasses", "$filterModel"],
+                            lang: "js"
+                        }
+                    }
+                }
+            },
+            {
+                "$project": {
+                    filterModel: 0
+                }
+            }
+        )
+
     }
 
     aggregationPipeline.push({
         "$project": {
             charClass: 1,
-            foo: 1,
             'isGroup': {
                 '$cond': {
                     'if': {
