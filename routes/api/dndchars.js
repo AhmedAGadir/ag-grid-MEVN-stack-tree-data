@@ -69,32 +69,34 @@ router.get('/', (req, res) => {
                     $expr: {
                         $function: {
                             body: `
-                                function (charClass, subclasses, filterModel) {
+                                function (filterModel, subclasses, ...filteredValues) {
 
-                                    function doesDocContainValue(doc) {
-                                        if (values.includes(doc.charClass)) {
+                                    function doesDocPassFilter(doc) {
+                                        const filterModelKeys = Object.keys(filterModel);
+                                        return filterModelKeys.every(key => filterModel[key].values.includes(doc[key]));
+                                    }
+
+                                    function recursivelySearchDoc(doc) {
+                                        if (doesDocPassFilter(doc)) {
                                             return true;
                                         }
                                         if (!doc.hasOwnProperty('subclasses')) {
                                             return false;
                                         }
-                                        return doc.subclasses.some(doc => doesDocContainValue(doc));
+                                        return doc.subclasses.some(doc => recursivelySearchDoc(doc));
                                     }
 
-                                    const values = filterModel.charClass.values;
-
-                                    if (values.includes(charClass)) {
-                                        return true;
-                                    }
-                                    
-                                    if (subclasses.length === 0) {
-                                        return false;
+                                    let doc = {
+                                        subclasses
                                     }
 
-                                    return subclasses.some(subclass => doesDocContainValue(subclass));
+                                    const filterModelKeys = Object.keys(filterModel);
+                                    filterModelKeys.forEach((key, ind) => doc[key] = filteredValues[ind]);
+
+                                    return recursivelySearchDoc(doc);
                                 }
                             `,
-                            args: ["$charClass", "$subclasses", "$filterModel"],
+                            args: ["$filterModel", "$subclasses", ...Object.keys(filterModel).map(key => `$${key}`)],
                             lang: "js"
                         }
                     }
