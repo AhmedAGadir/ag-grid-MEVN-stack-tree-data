@@ -14,7 +14,8 @@ router.get('/', (req, res) => {
         endRow,
         groupKeys = [],
         sortModel = [],
-        filterModel = {}
+        filterModel = {},
+        valueCols = []
     } = req.query;
 
     [startRow, endRow] = [startRow, endRow].map(Number);
@@ -24,7 +25,7 @@ router.get('/', (req, res) => {
     // note mongoose queries are NOT promises: https://mongoosejs.com/docs/queries.html#queries-are-not-promises
     let query;
 
-    // start building aggregation pipeline for grouping and filtering 
+    // start building aggregation pipeline for grouping, column aggregations and filtering 
 
     const aggregationPipeline = [];
 
@@ -49,6 +50,14 @@ router.get('/', (req, res) => {
                 }
             })
         });
+
+    }
+
+    // ** aggregating **
+
+    const isAggregating = Object.keys(valueCols).length > 0;
+
+    if (isAggregating) {
 
     }
 

@@ -1,6 +1,6 @@
 <template>
   <ag-grid-vue
-    style="width: 500px; height: 500px"
+    style="width: 800px; height: 500px"
     class="ag-theme-alpine"
     :gridOptions="gridOptions"
     @grid-ready="onGridReady"
@@ -37,7 +37,7 @@ export default {
         //   cellRenderer: "agGroupCellRenderer",
         // },
         { field: "dateModified" },
-        { field: "size" },
+        { field: "size", aggFunc: "sum" },
       ],
       defaultColDef: {
         width: 240,

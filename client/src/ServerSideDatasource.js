@@ -9,7 +9,8 @@ class ServerSideDataSource {
                 endRow,
                 groupKeys,
                 sortModel,
-                filterModel
+                filterModel,
+                valueCols
             },
             successCallback,
             failCallback } = params;
@@ -34,7 +35,8 @@ class ServerSideDataSource {
                     endRow,
                     groupKeys,
                     sortModel,
-                    filterModel
+                    filterModel,
+                    valueCols
                 },
                 // qs allows us to pass arrays in the GET request config
                 paramsSerializer: (params) => qs.stringify(params),
