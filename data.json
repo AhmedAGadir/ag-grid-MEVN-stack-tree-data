@@ -1,89 +1,72 @@
 [
     {
-        "charClass": "Wizard",
-        "subclasses": [
+        "folder": "Documents",
+        "subFolders": [
             {
-                "charClass": "Mage"
-            },
-            {
-                "charClass": "Specialist wizard"
-            }
-        ]
-    },
-    {
-        "charClass": "Priest",
-        "subclasses": [
-            {
-                "charClass": "Cleric"
-            },
-            {
-                "charClass": "Druid"
-            },
-            {
-                "charClass": "Priest of specific mythos"
-            }
-        ]
-    },
-    {
-        "charClass": "Warrior",
-        "subclasses": [
-            {
-                "charClass": "Fighter"
-            },
-            {
-                "charClass": "Paladin"
-            },
-            {
-                "charClass": "Ranger"
-            }
-        ]
-    },
-    {
-        "charClass": "Rogue1",
-        "subclasses": [
-            {
-                "charClass": "Thief"
-            },
-            {
-                "charClass": "Bard"
-            }
-        ]
-    },
-    {
-        "charClass": "Rogue2",
-        "subclasses": [
-            {
-                "charClass": "Thief1",
-                "subclasses": [
+                "folder": "txt",
+                "subFolders": [
                     {
-                        "charClass": "Assassin1",
-                        "subclasses": [
-                            {
-                                "charClass": "test1"
-                            },
-                            {
-                                "charClass": "test2"
-                            }
-                        ]
+                        "folder": "notes.txt",
+                        "dateModified": "May 21 2017 01:50:00 PM",
+                        "size": 14.7
                     }
                 ]
             },
             {
-                "charClass": "Thief2",
-                "subclasses": [
+                "folder": "pdf",
+                "subFolders": [
                     {
-                        "charClass": "Assassin",
-                        "subclasses": [
+                        "folder": "book.pdf",
+                        "dateModified": "May 20 2017 01:50:00 PM",
+                        "size": 2.1
+                    },
+                    {
+                        "folder": "cv.pdf",
+                        "dateModified": "May 20 2016 11:50:00 PM",
+                        "size": 2.4
+                    }
+                ]
+            },
+            {
+                "folder": "xls",
+                "subFolders": [
+                    {
+                        "folder": "accounts.xls",
+                        "dateModified": "Aug 12 2016 10:50:00 AM",
+                        "size": 4.3
+                    }
+                ]
+            },
+            {
+                "folder": "stuff",
+                "subFolders": [
+                    {
+                        "folder": "xyz.txt",
+                        "dateModified": "Jan 17 2016 08:03:00 PM",
+                        "size": 1.1
+                    }
+                ]
+            },
+            {
+                "folder": "Music",
+                "subFolders": [
+                    {
+                        "folder": "mp3",
+                        "subFolders": [
                             {
-                                "charClass": "test3"
+                                "folder": "pop",
+                                "dateModified": "Sep 11 2016 08:03:00 PM",
+                                "size": 14.3
                             },
                             {
-                                "charClass": "test4",
-                                "subclasses": [
-                                    {
-                                        "charClass": "Shinobi"
-                                    }
-                                ]
+                                "folder": "theme.mp3",
+                                "dateModified": "Aug 12 2016 10:50:00 PM",
+                                "size": 101
+                            },
+                            {
+                                "folder": "jazz",
+                                "dateModified": "Aug 12 2016 10:50:00 PM",
+                                "size": 101
                             }
                         ]
                     }
@@ -92,6 +75,8 @@
         ]
     },
     {
-        "charClass": "Unknown"
+        "folder": "temp.txt",
+        "dateModified": "Aug 12 2016 10:50:00 PM",
+        "size": 101
     }
 ]

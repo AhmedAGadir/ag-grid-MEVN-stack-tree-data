@@ -3,18 +3,32 @@ import qs from "qs";
 
 class ServerSideDataSource {
     getRows(params) {
-        const { request, successCallback, failCallback } = params;
         const {
-            startRow,
-            endRow,
-            groupKeys,
-            sortModel,
-            filterModel } = request;
+            request: {
+                startRow,
+                endRow,
+                groupKeys,
+                sortModel,
+                filterModel
+            },
+            successCallback,
+            failCallback } = params;
 
-        console.log("request", request);
+        console.log("request", params.request);
+
+        if (Object.keys(filterModel).length > 0) {
+
+            console.log('filterModel before', filterModel);
+
+            if (filterModel.hasOwnProperty('ag-Grid-AutoColumn')) {
+                filterModel.folder = { ...filterModel['ag-Grid-AutoColumn'] };
+                delete filterModel['ag-Grid-AutoColumn'];
+            }
+            console.log('new filter Model', filterModel)
+        }
 
         axios
-            .get("/api/dndchars", {
+            .get("/api/filesystem", {
                 params: {
                     startRow,
                     endRow,
@@ -34,11 +48,8 @@ class ServerSideDataSource {
             });
     }
     getFilterValues(field) {
-        if (field === 'charclass') {
-            field = 'charClass';
-        }
         return new Promise((resolve, reject) => {
-            axios.get(`/api/dndchars/values/${field}`)
+            axios.get(`/api/filesystem/values/${field}`)
                 .then(response => resolve(response.data))
                 .catch(err => reject(err));
         })

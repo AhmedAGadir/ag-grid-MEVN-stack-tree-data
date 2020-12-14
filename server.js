@@ -19,15 +19,18 @@ mongoose
     .then(() => {
         console.log('MongoDB connected database "acme"');
 
-        // populate dndChar collection
-        const initDndCharCollection = require('./init');
-        initDndCharCollection();
+        // populate fileSystem collection
+        const initFileSystemCollection = require('./init');
+        initFileSystemCollection();
     })
     .catch(err => console.log('MongoDB connection error: ' + err));
 
 // use routes
 const dndchars = require('./routes/api/dndchars');
 app.use('/api/dndchars', dndchars);
+
+const fileSystem = require('./routes/api/filesystem');
+app.use('/api/filesystem', fileSystem);
 
 const port = process.env.PORT || 5000;
 

@@ -1,16 +1,16 @@
-const DndChar = require('./models/dndchar');
+const FileSystem = require('./models/filesystem');
 
-function initDndCharCollection() {
+function initFileSystemCollection() {
 
-    // first clear dndChar collection
-    DndChar.collection.drop(() => {
+    // first clear filesystem collection
+    FileSystem.collection.drop(() => {
 
         // then populate database
         const data = require('./data.json');
 
-        data.forEach(characterClass => {
-            let char = new DndChar(characterClass);
-            char.save()
+        data.forEach(file => {
+            let folder = new FileSystem(file);
+            folder.save()
         });
 
     });
@@ -18,4 +18,4 @@ function initDndCharCollection() {
 }
 
 
-module.exports = initDndCharCollection;
+module.exports = initFileSystemCollection;

@@ -32,25 +32,12 @@ export default {
 
     this.gridOptions = {
       columnDefs: [
-        {
-          field: "charClass",
-          cellRenderer: "agGroupCellRenderer",
-          filterParams: {
-            values: (params) => {
-              const {
-                colDef: { field },
-                success,
-              } = params;
-
-              this.serverSideDatasource
-                .getFilterValues(field)
-                .then((values) => {
-                  console.log("filter values", values);
-                  success(values);
-                });
-            },
-          },
-        },
+        // {
+        //   field: "folder",
+        //   cellRenderer: "agGroupCellRenderer",
+        // },
+        { field: "dateModified" },
+        { field: "size" },
       ],
       defaultColDef: {
         width: 240,
@@ -58,11 +45,39 @@ export default {
         sortable: true,
         filter: true,
         floatingFilter: true,
+        filterParams: {
+          values: (params) => {
+            const {
+              colDef: { field },
+              success,
+            } = params;
+
+            this.serverSideDatasource.getFilterValues(field).then((values) => {
+              console.log("filter values", values);
+              success(values);
+            });
+          },
+        },
+        filterParams: {
+          values: (params) => {
+            const {
+              colDef: { field },
+              success,
+            } = params;
+
+            this.serverSideDatasource
+              .getFilterValues("folder")
+              .then((values) => {
+                console.log("filter values", values);
+                success(values);
+              });
+          },
+        },
       },
       // groupSuppressAutoColumn: true,
       autoGroupColumnDef: {
         cellRendererParams: {
-          innerRenderer: (params) => params.data.charClass,
+          innerRenderer: (params) => params.data.folder,
         },
       },
       animateRows: true,
@@ -76,6 +91,8 @@ export default {
     onGridReady(params) {
       this.gridApi = params.api;
       this.columnApi = params.columnApi;
+
+      params.api.sizeColumnsToFit();
 
       params.api.setServerSideDatasource(this.serverSideDatasource);
     },

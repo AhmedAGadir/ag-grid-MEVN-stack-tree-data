@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const DndChar = require('../../models/dndchar');
+const FileSystem = require('../../models/filesystem');
 const mongoose = require('mongoose');
 
 
-// @route GET api/dndchars
-// @desc get all dnd characters
+// @route GET api/filesystem
+// @desc get all files
 // @access Public
 router.get('/', (req, res) => {
 
@@ -41,11 +41,11 @@ router.get('/', (req, res) => {
                 }
             }, {
                 '$unwind': {
-                    'path': '$subclasses'
+                    'path': '$subFolders'
                 }
             }, {
                 '$replaceRoot': {
-                    'newRoot': '$subclasses'
+                    'newRoot': '$subFolders'
                 }
             })
         });
@@ -68,9 +68,9 @@ router.get('/', (req, res) => {
                 "$match": {
                     $expr: {
                         $function: {
-                            // Object.entries ?
+                            // Object.entries ? 
                             body: `
-                                function (filterModel, subclasses, ...filteredValues) {
+                                function (filterModel, subFolders, ...filteredValues) {
 
                                     function doesDocPassFilter(doc) {
                                         const filterModelKeys = Object.keys(filterModel);
@@ -81,14 +81,14 @@ router.get('/', (req, res) => {
                                         if (doesDocPassFilter(doc)) {
                                             return true;
                                         }
-                                        if (!doc.hasOwnProperty('subclasses')) {
+                                        if (!doc.hasOwnProperty('subFolders')) {
                                             return false;
                                         }
-                                        return doc.subclasses.some(doc => recursivelyScanDoc(doc));
+                                        return doc.subFolders.some(doc => recursivelyScanDoc(doc));
                                     }
 
                                     let doc = {
-                                        subclasses
+                                        subFolders
                                     }
 
                                     const filterModelKeys = Object.keys(filterModel);
@@ -97,7 +97,7 @@ router.get('/', (req, res) => {
                                     return recursivelyScanDoc(doc);
                                 }
                             `,
-                            args: ["$filterModel", "$subclasses", ...Object.keys(filterModel).map(key => `$${key}`)],
+                            args: ["$filterModel", "$subFolders", ...Object.keys(filterModel).map(key => `$${key}`)],
                             lang: "js"
                         }
                     }
@@ -112,11 +112,13 @@ router.get('/', (req, res) => {
 
     aggregationPipeline.push({
         "$project": {
-            charClass: 1,
+            folder: 1,
+            dateModified: 1,
+            size: 1,
             'isGroup': {
                 '$cond': {
                     'if': {
-                        '$gt': [{ '$size': '$subclasses' }, 0]
+                        '$gt': [{ '$size': '$subFolders' }, 0]
                     },
                     'then': true,
                     'else': false
@@ -125,7 +127,7 @@ router.get('/', (req, res) => {
         }
     })
 
-    query = DndChar.aggregate(aggregationPipeline);
+    query = FileSystem.aggregate(aggregationPipeline);
 
     // ** sorting ** 
 
@@ -153,8 +155,8 @@ router.get('/', (req, res) => {
 });
 
 
-// @route GET api/dndchars/values/:field
-// @desc get all dnd characters
+// @route GET api/filesystem/values/:field
+// @desc get all files
 // @access Public
 router.get('/values/:field', (req, res) => {
 
@@ -162,7 +164,7 @@ router.get('/values/:field', (req, res) => {
         const subDocs = [];
         docs.forEach(record => {
             values.push(record[field]);
-            subDocs.push(...record.subclasses);
+            subDocs.push(...record.subFolders);
         });
         if (subDocs.length === 0) {
             return values;
@@ -171,9 +173,12 @@ router.get('/values/:field', (req, res) => {
         }
     }
 
-    DndChar
+    FileSystem
         .find({})
-        .then(documents => {
+        .exec((err, documents) => {
+            if (err) {
+                console.log(err);
+            }
             const field = req.params.field;
             const values = getValues(documents, field);
             res.send(values);
@@ -181,29 +186,30 @@ router.get('/values/:field', (req, res) => {
 });
 
 
-// @route POST api/dndchars
-// @desc create a new dnd character
+// @route POST api/filesystem
+// @desc create a new folder
 // @access Public
 router.post('/', (req, res) => {
-    const { charClass, subclasses } = req.body;
+    console.log('*****req.body*****', req.body);
+    // const { charClass, subclasses } = req.body;
 
-    const newChar = new DndChar({ charClass, subclasses });
+    const newFolder = new FileSystem({ ...req.body });
 
-    newChar
+    newFolder
         .save()
-        .then(dndchar => res.json(dndchar));
+        .then(folder => res.json(folder));
 });
 
 
 
-// @route  DELETE api/dndchars
-// @desc   Delete a dnd character
+// @route  DELETE api/filesystem
+// @desc   Delete a folder
 // @access Public 
 router.delete('/:id', (req, res) => {
-    DndChar
+    FileSystem
         .findById(req.params.id)
-        .then(dndchar => {
-            dndchar
+        .then(file => {
+            file
                 .remove()
                 .then(() => res.json({ success: true }))
                 .catch(err => res.json({ success: false }));
