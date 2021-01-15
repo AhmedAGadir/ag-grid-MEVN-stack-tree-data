@@ -55,9 +55,66 @@ router.get('/', (req, res) => {
 
     // ** aggregating **
 
+    // valueCols: Array(1)
+    // 0: {id: "size", aggFunc: "sum", displayName: "Size", field: "size"}
+
     const isAggregating = Object.keys(valueCols).length > 0;
 
     if (isAggregating) {
+
+        // addField or project: $size : $function: ` function(){ }`
+        aggregationPipeline.push(
+            {
+                '$addFields': {
+                    'valueCols': {
+                        'aggFunc': 'sum',
+                        'field': 'size'
+                    }
+                }
+            }, {
+            '$addFields': {
+                'size': {
+                    '$cond': {
+                        'if': {
+                            '$gt': [
+                                {
+                                    '$size': '$subFolders'
+                                }, 0
+                            ]
+                        },
+                        'then': {
+                            '$function': {
+                                'body': `
+                                    function (valueCols, subFolders) { 
+                                        function getSize(valueCols, subFolders) { 
+                                            let total = 0; 
+                                            subFolders.forEach(subFolder => { 
+                                                if (subFolder.hasOwnProperty(\'size\')) { 
+                                                    total += subFolder.size; 
+                                                } else { 
+                                                    total += getSize(valueCols, subFolder.subFolders) 
+                                                } 
+                                            }); 
+                                            return total; 
+                                        } 
+                                        return getSize(valueCols, subFolders) 
+                                    }
+                                `,
+                                'args': [
+                                    '$valueCols', '$subFolders'
+                                ],
+                                'lang': 'js'
+                            }
+                        },
+                        'else': '$size'
+                    }
+                }
+            }
+        }, {
+            '$unset': 'valueCols'
+        }
+
+        )
 
     }
 

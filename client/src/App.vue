@@ -37,7 +37,10 @@ export default {
         //   cellRenderer: "agGroupCellRenderer",
         // },
         { field: "dateModified" },
-        { field: "size", aggFunc: "sum" },
+        {
+          field: "size",
+          aggFunc: "sum",
+        },
       ],
       defaultColDef: {
         width: 240,
