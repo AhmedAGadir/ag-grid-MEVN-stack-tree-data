@@ -212,13 +212,29 @@ router.get('/', (req, res) => {
     query
         .skip(startRow)
         .limit(endRow - startRow)
-        .exec((err, result) => {
+        .exec((err, rows) => {
             if (err) {
                 console.log('error in query', err);
                 // handler error*****
             }
-            res.json(result);
+
+            let lastRowIndex = getLastRowIndex(startRow, endRow, rows);
+
+            res.json({
+                rows,
+                lastRowIndex
+            });
         })
+
+    function getLastRowIndex(startRow, endRow, rows) {
+        let lastRowIndex;
+        if (!rows || rows.length == 0) {
+            lastRowIndex = null;
+        }
+        var currentLastRow = startRow + rows.length;
+        lastRowIndex = currentLastRow < endRow ? currentLastRow : -1;
+        return lastRowIndex;
+    }
 
 });
 

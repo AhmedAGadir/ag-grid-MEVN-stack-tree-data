@@ -43,7 +43,7 @@ class ServerSideDataSource {
             })
             .then((res) => {
                 console.log("response data", res.data);
-                successCallback(res.data, res.data.length);
+                successCallback(res.data.rows, res.data.lastRowIndex);
             })
             .catch((err) => {
                 failCallback(() => console.log("failed"));
