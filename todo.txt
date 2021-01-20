@@ -1,26 +1,8 @@
-aggregations
-sorting
-filtering
-grouping
-
-treedata
-
 larger dataset
+account for start and endRows -- .skip() and .limit()
+handle errors, failed requests - res.send(5xx)...
 
-handle errors, failed requests
+ensure order --- $natural 
 
-find a way to close mongodb connection after exiting npm run dev
-
-https://stackoverflow.com/questions/37571997/nodejs-run-command-when-script-is-terminated
-
-https://docs.mongodb.com/manual/tutorial/write-scripts-for-the-mongo-shell/
-
- // ** ensure order --- $natural 
-    // account for start and endRows -- .skip() and .limit()
-    // handle errors - res.send(5xx)...
-
-
-new thumbnail 
-
-only initDatabase once -- mongoose.once
-maybe this isnt possible because of nodemon ^^^  
+restore group state after sort and filter
+add multiple aggregations

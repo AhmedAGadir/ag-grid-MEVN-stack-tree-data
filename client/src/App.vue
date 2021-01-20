@@ -4,12 +4,17 @@
     class="ag-theme-alpine"
     :gridOptions="gridOptions"
     @grid-ready="onGridReady"
+    @row-group-opened="onRowGroupOpened"
+    :getRowNodeId="getRowNodeId"
+    @filter-changed="onFilterChanged"
   >
   </ag-grid-vue>
 </template>
 
 <script>
 import { AgGridVue } from "ag-grid-vue";
+import FileCellRenderer from "./components/FileCellRenderer";
+
 import "ag-grid-enterprise";
 
 import ServerSideDatasource from "./ServerSideDatasource";
@@ -22,10 +27,12 @@ export default {
       gridApi: null,
       columnApi: null,
       gridOptions: {},
+      expandedNodes: {},
     };
   },
   components: {
     AgGridVue,
+    FileCellRenderer,
   },
   beforeMount() {
     this.serverSideDatasource = new ServerSideDatasource();
@@ -36,10 +43,20 @@ export default {
         //   field: "folder",
         //   cellRenderer: "agGroupCellRenderer",
         // },
-        { field: "dateModified" },
+        {
+          field: "dateModified",
+          comparator: (d1, d2) => {
+            return new Date(d1).getTime() < new Date(d2).getTime() ? -1 : 1;
+          },
+        },
         {
           field: "size",
           aggFunc: "sum",
+          valueFormatter: function (params) {
+            return params.value
+              ? Math.round(params.value * 10) / 10 + " MB"
+              : "0 MB";
+          },
         },
       ],
       defaultColDef: {
@@ -50,26 +67,13 @@ export default {
         floatingFilter: true,
         filterParams: {
           values: (params) => {
-            const {
-              colDef: { field },
+            let {
+              colDef: { colId, field },
               success,
             } = params;
-
-            this.serverSideDatasource.getFilterValues(field).then((values) => {
-              console.log("filter values", values);
-              success(values);
-            });
-          },
-        },
-        filterParams: {
-          values: (params) => {
-            const {
-              colDef: { field },
-              success,
-            } = params;
-
+            let searchField = colId === "ag-Grid-AutoColumn" ? "folder" : field;
             this.serverSideDatasource
-              .getFilterValues("folder")
+              .getFilterValues(searchField)
               .then((values) => {
                 console.log("filter values", values);
                 success(values);
@@ -80,7 +84,8 @@ export default {
       // groupSuppressAutoColumn: true,
       autoGroupColumnDef: {
         cellRendererParams: {
-          innerRenderer: (params) => params.data.folder,
+          innerRendererFramework: "FileCellRenderer",
+          // innerRenderer: (params) => params.data.folder,
         },
       },
       animateRows: true,
@@ -98,6 +103,52 @@ export default {
       params.api.sizeColumnsToFit();
 
       params.api.setServerSideDatasource(this.serverSideDatasource);
+    },
+    onRowGroupOpened(params) {
+      let nodeId = params.node.id;
+      let nodeUiLevel = params.node.uiLevel;
+      let expandedNodes = this.expandedNodes;
+
+      if (params.node.expanded) {
+        if (!expandedNodes[nodeUiLevel]) {
+          expandedNodes[nodeUiLevel] = new Set();
+        }
+        expandedNodes[nodeUiLevel].add(nodeId);
+      } else {
+        expandedNodes[nodeUiLevel].delete(nodeId);
+      }
+    },
+    getRowNodeId(data) {
+      return data._id;
+    },
+    onFilterChanged(params) {
+      this.restoreExpandedGroups();
+    },
+    restoreExpandedGroups() {
+      let expandedNodes = this.expandedNodes;
+      console.log("expanded nodes before", expandedNodes);
+
+      // let restoreGroupsInt = setInterval(() => {
+      //   if (isGroupsRestored()) {
+      //     clearInterval(restoreGroupsInt);
+      //   } else {
+      //     restoreGroups();
+      //   }
+      // }, 1000);
+
+      Object.entries(expandedNodes).forEach(([uiLevel, nodeSet]) => {
+        setTimeout(() => {
+          console.log("uiLevel", uiLevel);
+          for (const nodeId of nodeSet) {
+            console.log("nodeId", nodeId);
+            const rowNode = this.gridApi.getRowNode(nodeId);
+            if (rowNode) {
+              console.log(rowNode.data);
+              rowNode.setExpanded(true);
+            }
+          }
+        }, 2000 + uiLevel * 1000);
+      });
     },
   },
 };

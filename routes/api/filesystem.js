@@ -210,6 +210,8 @@ router.get('/', (req, res) => {
     // *** execute ***
 
     query
+        .skip(startRow)
+        .limit(endRow - startRow)
         .exec((err, result) => {
             if (err) {
                 console.log('error in query', err);

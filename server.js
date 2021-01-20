@@ -26,9 +26,6 @@ mongoose
     .catch(err => console.log('MongoDB connection error: ' + err));
 
 // use routes
-const dndchars = require('./routes/api/dndchars');
-app.use('/api/dndchars', dndchars);
-
 const fileSystem = require('./routes/api/filesystem');
 app.use('/api/filesystem', fileSystem);
 
