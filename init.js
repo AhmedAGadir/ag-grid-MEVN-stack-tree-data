@@ -6,9 +6,9 @@ function initFileSystemCollection() {
     FileSystem.collection.drop(() => {
 
         // then populate database
-        // const data = require('./data.json');
+        const data = require('./data.json');
 
-        let data = repeatData(require('./data.json'), 100)
+        // let data = repeatData(require('./data.json'), 100)
 
         data.forEach(file => {
             let folder = new FileSystem(file);

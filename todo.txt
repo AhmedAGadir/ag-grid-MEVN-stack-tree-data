@@ -1,5 +1,4 @@
 larger dataset
-account for start and endRows -- .skip() and .limit()
 handle errors, failed requests - res.send(5xx)...
 
 ensure order --- $natural 

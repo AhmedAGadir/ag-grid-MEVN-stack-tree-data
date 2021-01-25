@@ -4,9 +4,6 @@
     class="ag-theme-alpine"
     :gridOptions="gridOptions"
     @grid-ready="onGridReady"
-    @row-group-opened="onRowGroupOpened"
-    :getRowNodeId="getRowNodeId"
-    @filter-changed="onFilterChanged"
   >
   </ag-grid-vue>
 </template>
@@ -63,23 +60,7 @@ export default {
         width: 240,
         resizable: true,
         sortable: true,
-        filter: true,
         floatingFilter: true,
-        filterParams: {
-          values: (params) => {
-            let {
-              colDef: { colId, field },
-              success,
-            } = params;
-            let searchField = colId === "ag-Grid-AutoColumn" ? "folder" : field;
-            this.serverSideDatasource
-              .getFilterValues(searchField)
-              .then((values) => {
-                console.log("filter values", values);
-                success(values);
-              });
-          },
-        },
       },
       // groupSuppressAutoColumn: true,
       autoGroupColumnDef: {
@@ -87,12 +68,25 @@ export default {
           innerRendererFramework: "FileCellRenderer",
           // innerRenderer: (params) => params.data.folder,
         },
+        filter: true,
+        filterParams: {
+          values: (params) => {
+            const { success } = params;
+            this.serverSideDatasource
+              .getFilterValues("folder")
+              .then((values) => {
+                console.log("filter values", values);
+                success(values);
+              });
+          },
+        },
       },
       animateRows: true,
       rowModelType: "serverSide",
       treeData: true,
       isServerSideGroup: (dataItem) => dataItem.isGroup,
       getServerSideGroupKey: (dataItem) => dataItem._id,
+      getRowNodeId: (data) => data._id,
     };
   },
   methods: {
@@ -104,52 +98,49 @@ export default {
 
       params.api.setServerSideDatasource(this.serverSideDatasource);
     },
-    onRowGroupOpened(params) {
-      let nodeId = params.node.id;
-      let nodeUiLevel = params.node.uiLevel;
-      let expandedNodes = this.expandedNodes;
+    // onRowGroupOpened(params) {
+    //   let nodeId = params.node.id;
+    //   let nodeUiLevel = params.node.uiLevel;
+    //   let expandedNodes = this.expandedNodes;
 
-      if (params.node.expanded) {
-        if (!expandedNodes[nodeUiLevel]) {
-          expandedNodes[nodeUiLevel] = new Set();
-        }
-        expandedNodes[nodeUiLevel].add(nodeId);
-      } else {
-        expandedNodes[nodeUiLevel].delete(nodeId);
-      }
-    },
-    getRowNodeId(data) {
-      return data._id;
-    },
-    onFilterChanged(params) {
-      this.restoreExpandedGroups();
-    },
-    restoreExpandedGroups() {
-      let expandedNodes = this.expandedNodes;
-      console.log("expanded nodes before", expandedNodes);
+    //   if (params.node.expanded) {
+    //     if (!expandedNodes[nodeUiLevel]) {
+    //       expandedNodes[nodeUiLevel] = new Set();
+    //     }
+    //     expandedNodes[nodeUiLevel].add(nodeId);
+    //   } else {
+    //     expandedNodes[nodeUiLevel].delete(nodeId);
+    //   }
+    // },
+    // onFilterChanged(params) {
+    //   this.restoreExpandedGroups();
+    // },
+    // restoreExpandedGroups() {
+    //   let expandedNodes = this.expandedNodes;
+    //   console.log("expanded nodes before", expandedNodes);
 
-      // let restoreGroupsInt = setInterval(() => {
-      //   if (isGroupsRestored()) {
-      //     clearInterval(restoreGroupsInt);
-      //   } else {
-      //     restoreGroups();
-      //   }
-      // }, 1000);
+    //   // let restoreGroupsInt = setInterval(() => {
+    //   //   if (isGroupsRestored()) {
+    //   //     clearInterval(restoreGroupsInt);
+    //   //   } else {
+    //   //     restoreGroups();
+    //   //   }
+    //   // }, 1000);
 
-      Object.entries(expandedNodes).forEach(([uiLevel, nodeSet]) => {
-        setTimeout(() => {
-          console.log("uiLevel", uiLevel);
-          for (const nodeId of nodeSet) {
-            console.log("nodeId", nodeId);
-            const rowNode = this.gridApi.getRowNode(nodeId);
-            if (rowNode) {
-              console.log(rowNode.data);
-              rowNode.setExpanded(true);
-            }
-          }
-        }, 2000 + uiLevel * 1000);
-      });
-    },
+    //   Object.entries(expandedNodes).forEach(([uiLevel, nodeSet]) => {
+    //     setTimeout(() => {
+    //       console.log("uiLevel", uiLevel);
+    //       for (const nodeId of nodeSet) {
+    //         console.log("nodeId", nodeId);
+    //         const rowNode = this.gridApi.getRowNode(nodeId);
+    //         if (rowNode) {
+    //           console.log(rowNode.data);
+    //           rowNode.setExpanded(true);
+    //         }
+    //       }
+    //     }, 2000 + uiLevel * 1000);
+    //   });
+    // },
   },
 };
 </script>

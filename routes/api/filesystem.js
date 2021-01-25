@@ -113,9 +113,7 @@ router.get('/', (req, res) => {
         }, {
             '$unset': 'valueCols'
         }
-
         )
-
     }
 
     // ** filtering **
@@ -151,6 +149,10 @@ router.get('/', (req, res) => {
                                             return false;
                                         }
                                         return doc.subFolders.some(doc => recursivelyScanDoc(doc));
+                                    }
+
+                                    if (filterModel.folder && !filterModel.folder.hasOwnProperty('values')) {
+                                        return null
                                     }
 
                                     let doc = {
@@ -217,7 +219,7 @@ router.get('/', (req, res) => {
                 console.log('error in query', err);
                 // handler error*****
             }
-
+            console.log('******data*****', rows);
             let lastRowIndex = getLastRowIndex(startRow, endRow, rows);
 
             res.json({
