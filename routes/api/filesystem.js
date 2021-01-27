@@ -110,23 +110,23 @@ router.post('/', (req, res) => {
 
     if (isFiltering) {
 
+        let filterValues = filterModel.folder.values;
+
         aggregationPipeline.push(
             {
                 "$addFields": {
-                    filterModel: filterModel
+                    filterValues: filterValues
                 }
             },
             {
                 "$match": {
                     $expr: {
                         $function: {
-                            // Object.entries ? 
                             body: `
-                                function (filterModel, subFolders, ...filteredValues) {
+                                function (filterValues, subFolders, folder) {
 
                                     function doesDocPassFilter(doc) {
-                                        const filterModelKeys = Object.keys(filterModel);
-                                        return filterModelKeys.every(key => filterModel[key].values.includes(doc[key]));
+                                        return filterValues.includes(doc.folder)
                                     }
 
                                     function recursivelyScanDoc(doc) {
@@ -139,28 +139,26 @@ router.post('/', (req, res) => {
                                         return doc.subFolders.some(doc => recursivelyScanDoc(doc));
                                     }
 
-                                    if (filterModel.folder && !filterModel.folder.hasOwnProperty('values')) {
+                                    if (filterValues.length === 0) {
                                         return null
                                     }
 
                                     let doc = {
+                                        folder,
                                         subFolders
                                     }
-
-                                    const filterModelKeys = Object.keys(filterModel);
-                                    filterModelKeys.forEach((key, ind) => doc[key] = filteredValues[ind]);
 
                                     return recursivelyScanDoc(doc);
                                 }
                             `,
-                            args: ["$filterModel", "$subFolders", ...Object.keys(filterModel).map(key => `$${key}`)],
+                            args: ["$filterValues", "$subFolders", "$folder"],
                             lang: "js"
                         }
                     }
                 }
             },
             {
-                "$unset": "filterModel"
+                "$unset": "filterValues"
             }
         )
 
@@ -190,6 +188,7 @@ router.post('/', (req, res) => {
     const isSorting = sortModel.length > 0;
 
     if (isSorting) {
+        console.log('sortModel', sortModel)
         const sortQuery = {};
         sortModel.forEach(({ colId, sort }) => {
             sortQuery[colId] = sort;

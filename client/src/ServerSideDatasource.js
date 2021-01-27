@@ -14,17 +14,19 @@ class ServerSideDataSource {
             successCallback,
             failCallback } = params;
 
-        console.log("request", params.request);
+
+        let AG_GRID_AUTOCOLUMN = 'ag-Grid-AutoColumn';
 
         if (Object.keys(filterModel).length > 0) {
-
-            console.log('filterModel before', filterModel);
-
-            if (filterModel.hasOwnProperty('ag-Grid-AutoColumn')) {
-                filterModel.folder = { ...filterModel['ag-Grid-AutoColumn'] };
-                delete filterModel['ag-Grid-AutoColumn'];
+            if (filterModel.hasOwnProperty(AG_GRID_AUTOCOLUMN)) {
+                filterModel.folder = { ...filterModel[AG_GRID_AUTOCOLUMN] };
+                delete filterModel[AG_GRID_AUTOCOLUMN];
             }
-            console.log('new filter Model', filterModel)
+        }
+
+        let autoGroupSortingIndex = sortModel.findIndex(sM => sM.colId === AG_GRID_AUTOCOLUMN);
+        if (autoGroupSortingIndex !== -1) {
+            sortModel[autoGroupSortingIndex].colId = 'folder'
         }
 
         axios
