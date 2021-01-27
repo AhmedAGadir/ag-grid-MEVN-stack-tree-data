@@ -4,10 +4,12 @@ const FileSystem = require('../../models/filesystem');
 const mongoose = require('mongoose');
 
 
-// @route GET api/filesystem
-// @desc get all files
+// @route POST api/filesystem
+// @desc retrieve desired rows from ag-Grid's getRows call.
 // @access Public
-router.get('/', (req, res) => {
+router.post('/', (req, res) => {
+
+    console.log('*****request', req.body.data);
 
     let {
         startRow,
@@ -16,11 +18,11 @@ router.get('/', (req, res) => {
         sortModel = [],
         filterModel = {},
         valueCols = []
-    } = req.query;
+    } = req.body.data;
 
     [startRow, endRow] = [startRow, endRow].map(Number);
 
-    console.log('params', { startRow, endRow, groupKeys, sortModel, filterModel });
+    console.log('params', { startRow, endRow, groupKeys, sortModel, filterModel, valueCols });
 
     // note mongoose queries are NOT promises: https://mongoosejs.com/docs/queries.html#queries-are-not-promises
     let query;
@@ -55,23 +57,11 @@ router.get('/', (req, res) => {
 
     // ** aggregating **
 
-    // valueCols: Array(1)
-    // 0: {id: "size", aggFunc: "sum", displayName: "Size", field: "size"}
-
     const isAggregating = Object.keys(valueCols).length > 0;
 
     if (isAggregating) {
 
-        // addField or project: $size : $function: ` function(){ }`
-        aggregationPipeline.push(
-            {
-                '$addFields': {
-                    'valueCols': {
-                        'aggFunc': 'sum',
-                        'field': 'size'
-                    }
-                }
-            }, {
+        aggregationPipeline.push({
             '$addFields': {
                 'size': {
                     '$cond': {
@@ -85,23 +75,23 @@ router.get('/', (req, res) => {
                         'then': {
                             '$function': {
                                 'body': `
-                                    function (valueCols, subFolders) { 
-                                        function getSize(valueCols, subFolders) { 
+                                    function (subFolders) { 
+                                        function getSize(subFolders) { 
                                             let total = 0; 
                                             subFolders.forEach(subFolder => { 
                                                 if (subFolder.hasOwnProperty(\'size\')) { 
                                                     total += subFolder.size; 
                                                 } else { 
-                                                    total += getSize(valueCols, subFolder.subFolders) 
+                                                    total += getSize(subFolder.subFolders) 
                                                 } 
                                             }); 
                                             return total; 
                                         } 
-                                        return getSize(valueCols, subFolders) 
+                                        return getSize(subFolders) 
                                     }
                                 `,
                                 'args': [
-                                    '$valueCols', '$subFolders'
+                                    '$subFolders'
                                 ],
                                 'lang': 'js'
                             }
@@ -110,8 +100,6 @@ router.get('/', (req, res) => {
                     }
                 }
             }
-        }, {
-            '$unset': 'valueCols'
         }
         )
     }
@@ -219,7 +207,6 @@ router.get('/', (req, res) => {
                 console.log('error in query', err);
                 // handler error*****
             }
-            console.log('******data*****', rows);
             let lastRowIndex = getLastRowIndex(startRow, endRow, rows);
 
             res.json({
@@ -242,7 +229,7 @@ router.get('/', (req, res) => {
 
 
 // @route GET api/filesystem/values/:field
-// @desc get all files
+// @desc get all field values
 // @access Public
 router.get('/values/:field', (req, res) => {
 
@@ -275,16 +262,16 @@ router.get('/values/:field', (req, res) => {
 // @route POST api/filesystem
 // @desc create a new folder
 // @access Public
-router.post('/', (req, res) => {
-    console.log('*****req.body*****', req.body);
-    // const { charClass, subclasses } = req.body;
+// router.post('/', (req, res) => {
+//     console.log('*****req.body*****', req.body);
+//     // const { charClass, subclasses } = req.body;
 
-    const newFolder = new FileSystem({ ...req.body });
+//     const newFolder = new FileSystem({ ...req.body });
 
-    newFolder
-        .save()
-        .then(folder => res.json(folder));
-});
+//     newFolder
+//         .save()
+//         .then(folder => res.json(folder));
+// });
 
 
 

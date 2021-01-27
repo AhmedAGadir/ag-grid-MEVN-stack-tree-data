@@ -36,10 +36,6 @@ export default {
 
     this.gridOptions = {
       columnDefs: [
-        // {
-        //   field: "folder",
-        //   cellRenderer: "agGroupCellRenderer",
-        // },
         {
           field: "dateModified",
           comparator: (d1, d2) => {
@@ -62,11 +58,9 @@ export default {
         sortable: true,
         floatingFilter: true,
       },
-      // groupSuppressAutoColumn: true,
       autoGroupColumnDef: {
         cellRendererParams: {
           innerRendererFramework: "FileCellRenderer",
-          // innerRenderer: (params) => params.data.folder,
         },
         filter: true,
         filterParams: {
@@ -98,49 +92,6 @@ export default {
 
       params.api.setServerSideDatasource(this.serverSideDatasource);
     },
-    // onRowGroupOpened(params) {
-    //   let nodeId = params.node.id;
-    //   let nodeUiLevel = params.node.uiLevel;
-    //   let expandedNodes = this.expandedNodes;
-
-    //   if (params.node.expanded) {
-    //     if (!expandedNodes[nodeUiLevel]) {
-    //       expandedNodes[nodeUiLevel] = new Set();
-    //     }
-    //     expandedNodes[nodeUiLevel].add(nodeId);
-    //   } else {
-    //     expandedNodes[nodeUiLevel].delete(nodeId);
-    //   }
-    // },
-    // onFilterChanged(params) {
-    //   this.restoreExpandedGroups();
-    // },
-    // restoreExpandedGroups() {
-    //   let expandedNodes = this.expandedNodes;
-    //   console.log("expanded nodes before", expandedNodes);
-
-    //   // let restoreGroupsInt = setInterval(() => {
-    //   //   if (isGroupsRestored()) {
-    //   //     clearInterval(restoreGroupsInt);
-    //   //   } else {
-    //   //     restoreGroups();
-    //   //   }
-    //   // }, 1000);
-
-    //   Object.entries(expandedNodes).forEach(([uiLevel, nodeSet]) => {
-    //     setTimeout(() => {
-    //       console.log("uiLevel", uiLevel);
-    //       for (const nodeId of nodeSet) {
-    //         console.log("nodeId", nodeId);
-    //         const rowNode = this.gridApi.getRowNode(nodeId);
-    //         if (rowNode) {
-    //           console.log(rowNode.data);
-    //           rowNode.setExpanded(true);
-    //         }
-    //       }
-    //     }, 2000 + uiLevel * 1000);
-    //   });
-    // },
   },
 };
 </script>

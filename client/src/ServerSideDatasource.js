@@ -1,5 +1,4 @@
 import axios from "axios";
-import qs from "qs";
 
 class ServerSideDataSource {
     getRows(params) {
@@ -29,8 +28,8 @@ class ServerSideDataSource {
         }
 
         axios
-            .get("/api/filesystem", {
-                params: {
+            .post("/api/filesystem", {
+                data: {
                     startRow,
                     endRow,
                     groupKeys,
@@ -38,8 +37,6 @@ class ServerSideDataSource {
                     filterModel,
                     valueCols
                 },
-                // qs allows us to pass arrays in the GET request config
-                paramsSerializer: (params) => qs.stringify(params),
             })
             .then((res) => {
                 console.log("response data", res.data);
