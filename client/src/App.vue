@@ -59,6 +59,7 @@ export default {
         floatingFilter: true,
       },
       autoGroupColumnDef: {
+        field: "folder",
         cellRendererParams: {
           innerRendererFramework: "FileCellRenderer",
         },
@@ -77,6 +78,7 @@ export default {
       },
       animateRows: true,
       rowModelType: "serverSide",
+      serverSideStoreType: "partial",
       treeData: true,
       isServerSideGroup: (dataItem) => dataItem.isGroup,
       getServerSideGroupKey: (dataItem) => dataItem._id,

@@ -188,12 +188,16 @@ router.post('/', (req, res) => {
     const isSorting = sortModel.length > 0;
 
     if (isSorting) {
-        console.log('sortModel', sortModel)
         const sortQuery = {};
         sortModel.forEach(({ colId, sort }) => {
             sortQuery[colId] = sort;
         });
-        query.sort(sortQuery);
+        query
+            .sort(sortQuery)
+            .collation({
+                locale: 'en',
+                numericOrdering: true
+            });
     }
 
     // *** execute ***

@@ -8,9 +8,9 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "ag-grid-community": "^24.1.0",
-    "ag-grid-enterprise": "^24.1.0",
-    "ag-grid-vue": "^24.1.1",
+    "ag-grid-community": "^25.0.0",
+    "ag-grid-enterprise": "^25.0.0",
+    "ag-grid-vue": "^25.0.0",
     "axios": "^0.21.0",
     "core-js": "^3.6.5",
     "qs": "^6.9.4",

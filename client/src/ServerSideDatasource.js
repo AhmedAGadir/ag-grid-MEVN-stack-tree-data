@@ -11,7 +11,7 @@ class ServerSideDataSource {
                 filterModel,
                 valueCols
             },
-            successCallback,
+            success,
             failCallback } = params;
 
 
@@ -42,10 +42,13 @@ class ServerSideDataSource {
             })
             .then((res) => {
                 console.log("response data", res.data);
-                successCallback(res.data.rows, res.data.lastRowIndex);
+                success({
+                    rowData: res.data.rows,
+                    rowCount: res.data.lastRowIndex
+                });
             })
             .catch((err) => {
-                failCallback(() => console.log("failed"));
+                fail(() => console.log("failed"));
             });
     }
     getFilterValues(field) {
